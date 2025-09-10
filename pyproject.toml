@@ -1,0 +1,19 @@
+[project]
+name = "conflict-monitoring-ntl"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "blackmarblepy>=2025.6.3",
+    "colorcet>=3.1.0",
+    "matplotlib>=3.10.6",
+    "pandas>=2.3.2",
+    "python-dotenv>=1.1.1",
+    "rasterio>=1.4.3",
+]
+
+[dependency-groups]
+dev = [
+    "jupyter>=1.1.1",
+]
