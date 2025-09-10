@@ -1,4 +1,4 @@
-# Conflict Monitoring - Night Time Lightning
+# Conflict Monitoring - Night Time Light
 
 Semester project at the EPFL ECEO Lab on conflict monitoring using nighttime light data.
 
