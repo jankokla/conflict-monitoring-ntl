@@ -7,4 +7,15 @@ theme:
 
 nav:
   - Analysis:
-    - Satellites: analysis/satellites.md
+      - Satellites: analysis/satellites.md
+  - User Guide:
+      - Exploration: ../notebooks/exploration.ipynb
+      
+plugins:
+  - search
+  - mkdocs-jupyter
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
