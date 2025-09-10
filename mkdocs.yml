@@ -1,0 +1,10 @@
+site_name: Conflict Monitoring - NTL
+site_url: https://dummy.org/
+theme:
+  name: material
+  features:
+    - navigation.sections
+
+nav:
+  - Analysis:
+    - Satellites: analysis/satellites.md
