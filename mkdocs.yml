@@ -2,8 +2,28 @@ site_name: Conflict Monitoring - NTL
 site_url: https://dummy.org/
 theme:
   name: material
+  logo: assets/logo.svg
+  favicon: assets/favicon.ico
   features:
     - navigation.sections
+    - toc.integrate
+  icon:
+    admonition:
+      note: fontawesome/solid/note-sticky
+      abstract: fontawesome/solid/book
+      info: fontawesome/solid/circle-info
+      tip: fontawesome/solid/bullhorn
+      success: fontawesome/solid/check
+      question: fontawesome/solid/circle-question
+      warning: fontawesome/solid/triangle-exclamation
+      failure: fontawesome/solid/bomb
+      danger: fontawesome/solid/skull
+      bug: fontawesome/solid/robot
+      example: fontawesome/solid/flask
+      quote: fontawesome/solid/quote-left
+
+extra_css:
+  - stylesheets/extra.css
 
 nav:
   - Analysis:
@@ -19,3 +39,9 @@ plugins:
         python:
           options:
             docstring_style: google
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.emoji
