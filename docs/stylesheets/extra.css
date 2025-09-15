@@ -7,3 +7,7 @@
 .md-footer {
     display: none;
 }
+
+.md-typeset a {
+  text-decoration: underline;
+}

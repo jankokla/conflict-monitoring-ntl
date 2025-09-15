@@ -1,5 +1,16 @@
 site_name: Conflict Monitoring - NTL
 site_url: https://dummy.org/
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Analysis:
+      - Satellites: analysis/satellites.md
+  - System Design:
+      - SDK: system_design/sdk.md
+  - User Guide:
+      - Exploration: ../notebooks/exploration.ipynb
+
 theme:
   name: material
   logo: assets/logo.svg
@@ -21,16 +32,6 @@ theme:
       bug: fontawesome/solid/robot
       example: fontawesome/solid/flask
       quote: fontawesome/solid/quote-left
-
-extra_css:
-  - stylesheets/extra.css
-
-nav:
-  - Analysis:
-      - Satellites: analysis/satellites.md
-      - API: analysis/api.md
-  - User Guide:
-      - Exploration: ../notebooks/exploration.ipynb
       
 plugins:
   - search
