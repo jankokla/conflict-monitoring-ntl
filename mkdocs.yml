@@ -28,12 +28,15 @@ extra_css:
 nav:
   - Analysis:
       - Satellites: analysis/satellites.md
+      - API: analysis/api.md
   - User Guide:
       - Exploration: ../notebooks/exploration.ipynb
       
 plugins:
   - search
   - mkdocs-jupyter
+  - panzoom
+  - d2
   - mkdocstrings:
       handlers:
         python:

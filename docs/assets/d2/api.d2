@@ -1,0 +1,87 @@
+direction: down
+
+analysis: SensorComparison {
+  icon: "https://icons.terrastruct.com/dev%2Fpython.svg"
+  icon.near: top-right
+  label.near: bottom-left
+}
+
+sdgsat: SDGSat (SDK) {
+  icon: "https://icons.terrastruct.com/dev%2Fpython.svg"
+  icon.near: top-right
+  label.near: bottom-left
+}
+
+enmap: EnMAP (SDK) {
+  icon: "https://icons.terrastruct.com/dev%2Fpython.svg"
+  icon.near: top-right
+  label.near: bottom-left
+}
+
+blackmarble: BlackMarblePy {
+  icon: "https://icons.terrastruct.com/dev%2Fpython.svg"
+  icon.near: top-right
+  label.near: bottom-left
+  style: {
+    stroke: grey
+    font-color: grey
+    fill: white
+  }
+}
+
+lsf-sdgsat: local filesystem {
+  shape: image
+  icon: https://icons.terrastruct.com/essentials%2F245-folder.svg
+}
+
+lsf-enmap: local filesystem {
+  shape: image
+  icon: https://icons.terrastruct.com/essentials%2F245-folder.svg
+}
+
+db-blackmarble: db {
+  shape: image
+  icon: https://icons.terrastruct.com/essentials%2F117-database.svg
+}
+
+api-sdgsat: API (fastapi) {
+  icon: "https://icons.terrastruct.com/dev%2Fpython.svg"
+  icon.near: top-right
+  label.near: bottom-left
+  style: {
+    stroke: purple
+    font-color: purple
+  }
+}
+
+api-enmap: API (fastapi) {
+  icon: "https://icons.terrastruct.com/dev%2Fpython.svg"
+  icon.near: top-right
+  label.near: bottom-left
+  style: {
+    stroke: purple
+    font-color: purple
+  }
+}
+
+api-blackmarble: NASA API {
+  icon: "https://icons.terrastruct.com/dev%2Fpython.svg"
+  icon.near: top-right
+  label.near: bottom-left
+  style: {
+    stroke: grey
+    font-color: grey
+  }
+}
+
+api-blackmarble <-> db-blackmarble
+api-sdgsat <-> lsf-sdgsat
+api-enmap <-> lsf-enmap
+
+sdgsat <-> api-sdgsat
+enmap <-> api-enmap
+blackmarble <-> api-blackmarble
+
+analysis <-> sdgsat: raster()
+analysis <-> blackmarble: raster()
+analysis <-> enmap: raster()
