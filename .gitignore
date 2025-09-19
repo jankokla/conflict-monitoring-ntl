@@ -1,6 +1,6 @@
 # Project related
 .vscode/
-data/**/*
+data/sdgsat/
 
 # OS generated files #
 ######################

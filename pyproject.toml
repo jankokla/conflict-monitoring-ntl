@@ -27,5 +27,8 @@ docs = [
     "mkdocstrings[python]>=0.30.0",
 ]
 
+[tool.uv]
+package = true
+
 [tool.basedpyright]
 typeCheckingMode = "off"

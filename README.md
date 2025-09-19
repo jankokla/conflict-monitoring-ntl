@@ -29,3 +29,7 @@ This will start a local development server, usually available at:
 ```
 http://127.0.0.1:8000/
 ```
+
+## Backlog
+
+- [] merge overlapping rasters when needed (rasterio should be enough)

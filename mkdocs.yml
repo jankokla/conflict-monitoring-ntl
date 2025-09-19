@@ -18,6 +18,8 @@ theme:
   features:
     - navigation.sections
     - toc.integrate
+    - content.tooltips
+    - content.footnote.tooltips
   icon:
     admonition:
       note: fontawesome/solid/note-sticky
@@ -32,7 +34,7 @@ theme:
       bug: fontawesome/solid/robot
       example: fontawesome/solid/flask
       quote: fontawesome/solid/quote-left
-      
+
 plugins:
   - search
   - mkdocs-jupyter
@@ -49,3 +51,7 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.superfences
   - pymdownx.emoji
+  - abbr
+  - attr_list
+  - pymdownx.snippets
+  - footnotes
