@@ -9,7 +9,7 @@ nav:
   - System Design:
       - SDK: system_design/sdk.md
   - User Guide:
-      - Exploration: ../notebooks/exploration.ipynb
+      - Compare Images: notebooks/example_comparison.ipynb
 
 theme:
   name: material

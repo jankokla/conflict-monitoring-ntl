@@ -112,7 +112,8 @@ class SDGSat:
 
     @staticmethod
     def _get_matching_tiles(
-        gdf: gpd.GeoDataFrame, date_range: datetime.date | list[datetime.date]
+        gdf: gpd.GeoDataFrame,
+        date_range: datetime.date | list[datetime.date],
     ) -> dict[datetime.date, list[PosixPath]]:
         """
         Find raster filepaths overlapping features within date range.
@@ -135,9 +136,6 @@ class SDGSat:
         if isinstance(date_range, datetime.date):
             date_range = [date_range]
 
-        start_date = min(date_range)
-        end_date = max(date_range)
-
         data_path = Path(__file__).parent.parent.parent / "data"
         filepaths = list(data_path.rglob("*_LH.tif"))
 
@@ -151,7 +149,7 @@ class SDGSat:
 
             date = datetime.datetime.strptime(date_str, "%Y%m%d").date()
 
-            if start_date <= date <= end_date:
+            if date in date_range:
                 with rasterio.open(filepath) as src:
                     bounds = src.bounds
                     raster_poly = box(
