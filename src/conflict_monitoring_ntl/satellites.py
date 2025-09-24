@@ -1,10 +1,13 @@
 import datetime
+import os
 import re
 from pathlib import Path, PosixPath
 from typing import Literal, Optional
 
 import geopandas as gpd
+import pandas as pd
 import rasterio
+import requests
 import rioxarray
 import xarray as xr
 from pydantic import ConfigDict, validate_call
@@ -161,3 +164,208 @@ class SDGSat:
                         matching_files[date].append(filepath)
 
         return matching_files
+
+
+class Landsat:
+
+    SERVICE_URL = "https://m2m.cr.usgs.gov/api/api/json/stable"
+    DATASET = "landsat_ot_c2_l2"
+
+    def __init__(self) -> None:
+        self._api_key = self._prompt_ers_login()
+        self._spatial_filter = None
+        self._metadata_filter = {
+            "filterType": "value",
+            "filterId": "61af9273566bb9a8",
+            "value": "8",  # landsat-8
+        }
+        self._cloud_cover_filter = {"min": 0, "max": 20}
+
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+    def raster(
+        self,
+        gdf: gpd.GeoDataFrame,
+        date_range: datetime.date | list[datetime.date],
+        variable: str | None = None,
+    ) -> xr.Dataset:
+
+        return xr.Dataset()
+
+    def scene_search(
+        self, date_range: datetime.date | list[datetime.date]
+    ) -> pd.DataFrame:
+        if isinstance(date_range, datetime.date):
+            date_range = [date_range]
+
+        payload = self._get_search_payload(min(date_range), max(date_range))
+
+        scenes = self._send_request(
+            url=os.path.join(self.SERVICE_URL, "scene-search"),
+            data=payload,
+            api_key=self._api_key,
+        )
+
+        return pd.json_normalize(scenes["results"])
+
+    def get_scenes_between_time(
+        self,
+        scenes_df: pd.DataFrame,
+        start_time: datetime.time = datetime.time(9, 0, 0),
+        end_time: datetime.time = datetime.time(11, 0, 0),
+    ) -> list[str]:
+
+        def get_time(meta_list, field):
+            time_pattern = "%Y-%m-%d %H:%M:%S"
+            for d in meta_list:
+                if d["fieldName"] == field:
+                    return datetime.datetime.strptime(d["value"], time_pattern).time()
+
+        def is_in_time_window(start_t, stop_t):
+            if start_time <= stop_t or stop_t <= end_time:
+                return True
+            if start_time <= start_t or start_t <= end_time:
+                return True
+            return False
+
+        scenes_df["start_time"] = scenes_df["metadata"].apply(
+            lambda meta: get_time(meta, "Start Time")  # type: ignore
+        )
+        scenes_df["stop_time"] = scenes_df["metadata"].apply(
+            lambda meta: get_time(meta, "Stop Time")  # type: ignore
+        )
+
+        filtered_df = scenes_df[
+            scenes_df.apply(
+                lambda row: is_in_time_window(row["start_time"], row["stop_time"]),
+                axis=1,
+            )
+        ]
+
+        return filtered_df.entityId.tolist()
+
+    def _get_search_payload(
+        self, start_date: datetime.date, end_date: datetime.date
+    ) -> dict:
+        return {
+            "datasetName": "landsat_ot_c2_l2",
+            "sceneFilter": {
+                "metadataFilter": self.metadata_filter,
+                "spatialFilter": self.spatial_filter,
+                "acquisitionFilter": {
+                    "start": start_date.strftime("%Y-%m-%d"),
+                    "end": end_date.strftime("%Y-%m-%d"),
+                },
+                "cloudCoverFilter": self.cloud_cover_filter,
+            },
+        }
+
+    @property
+    def cloud_cover_filter(self) -> dict:
+        return self._cloud_cover_filter
+
+    @cloud_cover_filter.setter
+    def cloud_cover_filter(self, min: int, max: int) -> None:
+        self._cloud_cover_filter = {"min": min, "max": max}
+
+    @property
+    def metadata_filter(self) -> dict:
+        if self._metadata_filter:
+            return self._metadata_filter
+        raise ValueError("You need to set `metadata_filter` first.")
+
+    @metadata_filter.setter
+    def metadata_filter(self, satellite: Literal["8", "9"]) -> None:
+        self._metadata_filter["value"] = satellite
+
+    @property
+    def spatial_filter(self) -> dict:
+        if self._spatial_filter:
+            return self._spatial_filter
+        raise ValueError("You need to set `spatial_filter` first.")
+
+    @spatial_filter.setter
+    def spatial_filter(self, gdf: gpd.GeoDataFrame) -> None:
+        self._spatial_filter = {
+            "filterType": "mbr",
+            "lowerLeft": {
+                "latitude": gdf.bounds.miny[0],
+                "longitude": gdf.bounds.minx[0],
+            },
+            "upperRight": {
+                "latitude": gdf.bounds.maxy[0],
+                "longitude": gdf.bounds.maxx[0],
+            },
+        }
+
+    def _prompt_ers_login(self) -> str | None:
+        """
+        Sends a POST request to the EarthExplorer service to obtain a login token.
+
+        Args:
+            self: The instance reference.
+
+        Returns:
+            The 'data' field from the JSON response containing login information.
+
+        Raises:
+            requests.HTTPError: If the HTTP request fails.
+            KeyError: If the 'data' field is missing in the response.
+            ValueError: If the response is not valid JSON.
+        """
+        response = requests.post(
+            os.path.join(self.SERVICE_URL, "login-token"),
+            json={
+                "username": os.getenv("EARTHEXPLORER_USERNAME"),
+                "token": os.getenv("EARTHEXPLORER_TOKEN"),
+            },
+        )
+        response.raise_for_status()
+        return response.json()["data"]
+
+    @staticmethod
+    def _send_request(
+        url: str,
+        data: dict,
+        api_key: str | None = None,
+    ) -> dict | str | None:
+        """
+        Sends a POST request to a specified M2M endpoint and returns the parsed
+            'data' field from the JSON response.
+
+        Parameters:
+            url: The endpoint URL to which the request is sent.
+            data: Dictionary payload to send as the JSON body of the request.
+            api_key: Authentication token added to the 'X-Auth-Token' header if provided.
+
+        Returns:
+            dict or None: The value of the 'data' field from the JSON response,
+                or None if the field is absent.
+
+        Raises:
+            requests.HTTPError: If the HTTP response status code indicates an error.
+            ValueError: If the response body is not valid JSON.
+        """
+        headers = {"X-Auth-Token": api_key} if api_key else {}
+
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()
+        output = response.json()
+
+        return output.get("data")
+
+    @staticmethod
+    def download_file(url: str, out_dir: Path):
+        # TODO: update
+        try:
+            response = requests.get(url, stream=True)
+            disposition = response.headers["content-disposition"]
+            filename = re.findall("filename=(.+)", disposition)[0].strip('"')
+            print(f"    Downloading: {filename} -- {url}...")
+
+            open(os.path.join(out_dir, filename), "wb").write(response.content)
+        except Exception as e:
+            print(f"\nFailed to download from {url}.")
+
+
+class ErsLoginError(Exception):
+    pass
