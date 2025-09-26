@@ -135,6 +135,8 @@ class Satellite(ABC):
 class EnMAP(Satellite):
     """EnMAP satellite raster data loader and band extraction utility."""
 
+    BANDS = [10, 26, 44]
+
     @property
     def DATA_FOLDER(self) -> str:
         return "enmap"
@@ -181,7 +183,7 @@ class EnMAP(Satellite):
 
                     patch = self._get_patch(gdf, src)
 
-                    bands_patch = patch.isel(band=[10, 26, 44])
+                    bands_patch = patch.isel(band=self.BANDS)
                     bands_patch = bands_patch.rio.reproject("EPSG:4326")
                     data_arrays_per_date.append(bands_patch)
 
