@@ -28,8 +28,14 @@ def plot_xarray_time_comparison(ds: xr.Dataset, band_name: str, cmap: str = "inf
 
     for i, ax in enumerate(axes[:n]):
         img = images.isel({date_dim: i}).values.squeeze()
+        img = img / np.nanmax(img)  # normalize
+
         valid_vals = img[img > 0]
         vmax = np.percentile(valid_vals, 99) if valid_vals.size > 0 else 1
+
+        if img.ndim == 3 and img.shape[0] == 3 and img.shape[-1] != 3:
+            img = img.transpose(1, 2, 0)  # converts (3, h, w) → (h, w, 3)
+
         ax.imshow(img, cmap=cmap, vmin=0, vmax=vmax)
 
         if isinstance(times[i], np.datetime64):
