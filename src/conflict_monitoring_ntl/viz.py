@@ -36,7 +36,7 @@ def plot_xarray_time_comparison(ds: xr.Dataset, band_name: str, cmap: str = "inf
         if img.ndim == 3 and img.shape[0] == 3 and img.shape[-1] != 3:
             img = img.transpose(1, 2, 0)  # converts (3, h, w) → (h, w, 3)
 
-        ax.imshow(img, cmap=cmap, vmin=0, vmax=vmax)
+        ax.imshow(img, cmap=cmap, vmin=img.min(), vmax=vmax)
 
         if isinstance(times[i], np.datetime64):
             label = times[i].astype("M8[D]").astype(object)
