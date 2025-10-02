@@ -1,8 +1,8 @@
 # Project related
 .vscode/
-data/sdgsat/
-data/enmap/
-data/landsat
+data/sdgsat/**/*
+data/enmap/**/*
+data/landsat/**/*
 
 # OS generated files #
 ######################

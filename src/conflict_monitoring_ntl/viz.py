@@ -1,3 +1,7 @@
+import warnings
+
+import folium
+import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
@@ -50,3 +54,61 @@ def plot_xarray_time_comparison(ds: xr.Dataset, band_name: str, cmap: str = "inf
 
     plt.tight_layout()
     plt.show()
+
+
+def plot_map_with_shape(
+    gdf: gpd.GeoDataFrame, zoom_start: int = 10, is_layer_control: bool = True
+) -> folium.Map:
+    """
+    Plots geographic shapes from a GeoDataFrame on an interactive Folium map
+        with ESRI satellite and label layers.
+
+    Args:
+        gdf: A GeoDataFrame containing the shape(s) to display.
+        zoom_start: The initial zoom level for the map. Defaults to 10.
+        is_layer_control: If True, adds a layer control widget so users can
+            toggle visibility of basemaps and overlays (default True).
+
+    Returns:
+        A folium.Map instance with the shape overlay, ESRI base layers,
+            and (optionally) interactive layer controls.
+    """
+    warnings.filterwarnings("ignore", message="Geometry is in a geographic CRS.*")
+
+    center = [gdf.geometry.centroid.y.mean(), gdf.geometry.centroid.x.mean()]
+
+    m = folium.Map(location=center, zoom_start=zoom_start, tiles=None)
+
+    # add base layer from ESRI
+    folium.TileLayer(
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",  # noqa: E501
+        attr="Esri",
+        name="Esri Satellite",
+        overlay=False,
+        control=True,
+    ).add_to(m)
+
+    # add labels
+    folium.TileLayer(
+        tiles="https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",  # noqa: E501
+        attr="Esri",
+        name="Labels",
+        overlay=True,
+        control=True,
+    ).add_to(m)
+
+    folium.GeoJson(
+        gdf.to_json(),
+        name="Boundary",
+        style_function=lambda _: {
+            "fillColor": "none",
+            "color": "red",
+            "weight": 3,
+            "fillOpacity": 0,
+        },
+    ).add_to(m)
+
+    if is_layer_control:
+        folium.LayerControl().add_to(m)
+
+    return m

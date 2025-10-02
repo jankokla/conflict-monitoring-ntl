@@ -6,6 +6,7 @@ extra_css:
 nav:
   - Analysis:
       - Satellites: analysis/satellites.md
+      - Regions: notebooks/cities.ipynb
   - System Design:
       - SDK: system_design/sdk.md
   - User Guide:
@@ -16,8 +17,8 @@ theme:
   logo: assets/logo.svg
   favicon: assets/favicon.ico
   features:
-    - navigation.sections
     - toc.integrate
+    - navigation.sections
     - content.tooltips
     - content.footnote.tooltips
   icon:

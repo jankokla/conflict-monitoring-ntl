@@ -1,0 +1,182 @@
+rural:
+  - id: NYALA
+    country: Sudan
+    city: Nyala
+    date: 2023-12-12
+    shapefile: sudan/sudan.shp
+
+  - id: MOPTI
+    country: Mali
+    city: Mopti
+    date: 2024-01-30
+    shapefile: mali/mopti.shp
+
+  - id: DEIR_EZ_ZOR
+    country: Syria
+    city: Deir ez-Zor
+    date: 2024-12-28
+    shapefile: syria/deir-ez-zor.shp
+
+  - id: KAGA_BANDORO
+    country: Central African Republic
+    city: Kaga-Bandoro
+    date: 2023-02-17
+    shapefile: central-african-republic/kaga-bandoro.shp
+
+  - id: AL_HUDAYDAH
+    country: Yemen
+    city: Al-Hudaydah
+    date: 2024-12-22
+    shapefile: yemen/al-hudaydah.shp
+
+  - id: MEKELE
+    country: Ethiopia
+    city: Mekele
+    date: 2024-03-28
+    shapefile: ethiopia/mekele.shp
+
+  - id: SITTWE
+    country: Myanmar
+    city: Sittwe
+    date: 2024-01-03
+    shapefile: myanmar/sittwe.shp
+
+  - id: MAIDUGURI
+    country: Nigeria
+    city: Maiduguri
+    date: 2024-05-28
+    shapefile: nigeria/maiduguri.shp
+
+  - id: BENTIU
+    country: South Sudan
+    city: Bentiu
+    date: 2024-12-24
+    shapefile: south-sudan/bentiu.shp
+
+  - id: KATANA
+    country: Democratic Republic of the Congo
+    city: Katana
+    date: 2024-05-28
+    shapefile: congo/katana.shp
+
+peri-urban:
+  - id: OUJDA
+    country: Morocco
+    city: Oujda
+    date: 2022-05-05
+    shapefile: morocco/oujda.shp
+
+  - id: RAIPUR
+    country: India
+    city: Raipur
+    date: 2022-04-01
+    shapefile: india/raipur.shp
+
+  - id: RANGPUR
+    country: Bangladesh
+    city: Rangpur
+    date: 2022-03-07
+    shapefile: bangladesh/rangpur.shp
+
+  - id: KURANEGALA
+    country: Sri Lanka
+    city: Kuranegala
+    date: 2024-02-07
+    shapefile: sri-lanka/kuranegala.shp
+
+  - id: CAN_THO
+    country: Vietnam
+    city: Can Tho
+    date: 2024-02-02
+    shapefile: vietnam/can-tho.shp
+
+  - id: LEGAZPI
+    country: Philippines
+    city: Legazpi
+    date: 2022-11-24
+    shapefile: philippines/legazpi.shp
+
+  - id: QARSHI
+    country: Uzbekistan
+    city: Qarshi
+    date: 2024-03-14
+    shapefile: uzbekistan/qarshi.shp
+
+  - id: KUMASI
+    country: Ghana
+    city: Kumasi
+    date: 2024-11-30
+    shapefile: ghana/kumasi.shp
+
+  - id: VILLAVICENCIO
+    country: Colombia
+    city: Villavicencio
+    date: 2022-12-28
+    shapefile: colombia/villavicencio.shp
+
+  - id: NAKURU
+    country: Kenya
+    city: Nakuru
+    date: 2022-02-27
+    shapefile: kenya/nakuru.shp
+
+urban:
+  - id: LAGOS
+    country: Nigeria
+    city: Lagos
+    date: 2024-12-23
+    shapefile: nigeria/lagos.shp
+
+  - id: NEW_DELHI
+    country: India
+    city: New Delhi
+    date: 2022-02-27
+    shapefile: india/new-delhi.shp
+
+  - id: SHANGHAI
+    country: China
+    city: Shanghai
+    date: 2021-11-10
+    shapefile: china/shanghai.shp
+
+  - id: CAIRO
+    country: Egypt
+    city: Cairo
+    date: 2022-02-06
+    shapefile: egypt/cairo.shp
+
+  - id: ZURICH
+    country: Switzerland
+    city: Zurich
+    date: 2022-03-22
+    shapefile: switzerland/zurich.shp
+
+  - id: MEXICO_CITY
+    country: Mexico
+    city: Mexico City
+    date: 2022-05-16
+    shapefile: mexico/mexico-city.shp
+
+  - id: TOKYO
+    country: Japan
+    city: Tokyo
+    date: 2022-01-08
+    shapefile: japan/tokyo.shp
+
+  - id: KARACHI
+    country: Pakistan
+    city: Karachi
+    date: 2023-12-17
+    shapefile: pakistan/karachi.shp
+
+  - id: LOS_ANGELES
+    country: USA
+    city: Los Angeles
+    date: 2022-11-30
+    shapefile: usa/los-angeles.shp
+
+  - id: PRETORIA
+    country: South Africa
+    city: Pretoria
+    date: 2022-03-18
+    shapefile: south-africa/pretoria.shp
