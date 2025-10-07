@@ -6,7 +6,9 @@ extra_css:
 nav:
   - Analysis:
       - Satellites: analysis/satellites.md
+      - Quantification: analysis/quantification.md
       - Regions: notebooks/cities.ipynb
+      - Plotting: notebooks/plotting.ipynb
   - System Design:
       - SDK: system_design/sdk.md
   - User Guide:
