@@ -4,60 +4,70 @@ rural:
     city: Nyala
     date: 2023-12-12
     shapefile: sudan/sudan.shp
+    timezone: Africa/Khartoum
 
   - id: MOPTI
     country: Mali
     city: Mopti
     date: 2024-01-30
     shapefile: mali/mopti.shp
+    timezone: Africa/Bamako
 
   - id: DEIR_EZ_ZOR
     country: Syria
     city: Deir ez-Zor
     date: 2024-12-28
     shapefile: syria/deir-ez-zor.shp
+    timezone: Asia/Damascus
 
   - id: KAGA_BANDORO
     country: Central African Republic
     city: Kaga-Bandoro
     date: 2023-02-17
     shapefile: central-african-republic/kaga-bandoro.shp
+    timezone: Africa/Bangui
 
   - id: AL_HUDAYDAH
     country: Yemen
     city: Al-Hudaydah
     date: 2024-12-22
     shapefile: yemen/al-hudaydah.shp
+    timezone: Asia/Aden
 
   - id: MEKELE
     country: Ethiopia
     city: Mekele
     date: 2024-03-28
     shapefile: ethiopia/mekele.shp
+    timezone: Africa/Addis_Ababa
 
   - id: SITTWE
     country: Myanmar
     city: Sittwe
     date: 2024-01-03
     shapefile: myanmar/sittwe.shp
+    timezone: Asia/Yangon
 
   - id: MAIDUGURI
     country: Nigeria
     city: Maiduguri
     date: 2024-05-28
     shapefile: nigeria/maiduguri.shp
+    timezone: Africa/Lagos
 
   - id: BENTIU
     country: South Sudan
     city: Bentiu
     date: 2024-12-24
     shapefile: south-sudan/bentiu.shp
+    timezone: Africa/Juba
 
   - id: KATANA
     country: Democratic Republic of the Congo
     city: Katana
     date: 2024-05-28
     shapefile: congo/katana.shp
+    timezone: Africa/Kinshasa
 
 peri-urban:
   - id: OUJDA
@@ -65,60 +75,70 @@ peri-urban:
     city: Oujda
     date: 2022-05-05
     shapefile: morocco/oujda.shp
+    timezone: Africa/Casablanca
 
   - id: RAIPUR
     country: India
     city: Raipur
     date: 2022-04-01
     shapefile: india/raipur.shp
+    timezone: Asia/Kolkata
 
   - id: RANGPUR
     country: Bangladesh
     city: Rangpur
     date: 2022-03-07
     shapefile: bangladesh/rangpur.shp
+    timezone: Asia/Dhaka
 
   - id: KURANEGALA
     country: Sri Lanka
     city: Kuranegala
     date: 2024-02-07
     shapefile: sri-lanka/kuranegala.shp
+    timezone: Asia/Colombo
 
   - id: CAN_THO
     country: Vietnam
     city: Can Tho
     date: 2024-02-02
     shapefile: vietnam/can-tho.shp
+    timezone: Asia/Ho_Chi_Minh
 
   - id: LEGAZPI
     country: Philippines
     city: Legazpi
     date: 2022-11-24
     shapefile: philippines/legazpi.shp
+    timezone: Asia/Manila
 
   - id: QARSHI
     country: Uzbekistan
     city: Qarshi
     date: 2024-03-14
     shapefile: uzbekistan/qarshi.shp
+    timezone: Asia/Tashkent
 
   - id: KUMASI
     country: Ghana
     city: Kumasi
     date: 2024-11-30
     shapefile: ghana/kumasi.shp
+    timezone: Africa/Accra
 
   - id: VILLAVICENCIO
     country: Colombia
     city: Villavicencio
     date: 2022-12-28
     shapefile: colombia/villavicencio.shp
+    timezone: America/Bogota
 
   - id: NAKURU
     country: Kenya
     city: Nakuru
     date: 2022-02-27
     shapefile: kenya/nakuru.shp
+    timezone: Africa/Nairobi
 
 urban:
   - id: LAGOS
@@ -126,57 +146,67 @@ urban:
     city: Lagos
     date: 2024-12-23
     shapefile: nigeria/lagos.shp
+    timezone: Africa/Lagos
 
   - id: NEW_DELHI
     country: India
     city: New Delhi
     date: 2022-02-27
     shapefile: india/new-delhi.shp
+    timezone: Asia/Kolkata
 
   - id: SHANGHAI
     country: China
     city: Shanghai
     date: 2021-11-10
     shapefile: china/shanghai.shp
+    timezone: Asia/Shanghai
 
   - id: CAIRO
     country: Egypt
     city: Cairo
     date: 2022-02-06
     shapefile: egypt/cairo.shp
+    timezone: Africa/Cairo
 
   - id: ZURICH
     country: Switzerland
     city: Zurich
     date: 2022-03-22
     shapefile: switzerland/zurich.shp
+    timezone: Europe/Zurich
 
   - id: MEXICO_CITY
     country: Mexico
     city: Mexico City
     date: 2022-05-16
     shapefile: mexico/mexico-city.shp
+    timezone: America/Mexico_City
 
   - id: TOKYO
     country: Japan
     city: Tokyo
     date: 2022-01-08
     shapefile: japan/tokyo.shp
+    timezone: Asia/Tokyo
 
   - id: KARACHI
     country: Pakistan
     city: Karachi
     date: 2023-12-17
     shapefile: pakistan/karachi.shp
+    timezone: Asia/Karachi
 
   - id: LOS_ANGELES
     country: USA
     city: Los Angeles
     date: 2022-11-30
     shapefile: usa/los-angeles.shp
+    timezone: America/Los_Angeles
 
   - id: PRETORIA
     country: South Africa
     city: Pretoria
     date: 2022-03-18
     shapefile: south-africa/pretoria.shp
+    timezone: Africa/Johannesburg

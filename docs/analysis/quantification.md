@@ -1,4 +1,4 @@
-# Quantification
+# Ideation
 
 ## Plotting
 
@@ -23,7 +23,7 @@ Some cool frameworks:
 - [dashboard example](https://examples.holoviz.org/gallery/datashader_dashboard/datashader_dashboard.html)
 - [NDVI example -> radiance](https://examples.holoviz.org/gallery/heat_and_trees/heat_and_trees.html)
 - [4 tiles reacting at the same time](https://examples.holoviz.org/gallery/landsat/landsat.html)
-- 
+
 
 ## Indexes / Statistical Tests
 
@@ -34,6 +34,13 @@ Some cool frameworks:
 ## Other Notes
 
 - How to get from DN to L (radiance): SDGSat[^3]
+
+## How to Go About It
+
+- [] Create proper reader for GHS-POP data: provide GDF and extract the patch (collate when necessary)
+- [] Convert DN to radiance for SDGSat[^3]
+- [] Resample GHS-POP and SDGSat to 15-arc second resolution (comparable to Black Marble)
+- [] Stack rasters for better analysis ...
 
 [^1]: Guo, B., Hu, D., & Zheng, Q. (2023). Potentiality of SDGSAT-1 glimmer imagery to investigate the spatial variability in nighttime lights. International Journal of Applied Earth Observation and Geoinformation, 119, 103313. https://doi.org/10.1016/j.jag.2023.103313
 [^2]: Mokhtari, Z., Bergantino, A. S., Intini, M., Elia, M., Buongiorno, A., Giannico, V., Sanesi, G., & Lafortezza, R. (2025). Nighttime light extent and intensity explain the dynamics of human activity in coastal zones. Scientific Reports, 15(1). https://doi.org/10.1038/s41598-025-85917-z

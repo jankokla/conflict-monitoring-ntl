@@ -16,6 +16,11 @@ dependencies = [
     "shapely==2.1.1",
     "fiona==1.10.1",
     "bokeh>=3.8.0",
+    "holoviews>=1.21.0",
+    "geoviews>=1.14.1",
+    "datashader>=0.18.2",
+    "geemap>=0.36.4",
+    "xee>=0.0.22",
 ]
 
 [dependency-groups]

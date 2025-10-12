@@ -3,6 +3,8 @@
 data/sdgsat/**/*
 data/enmap/**/*
 data/landsat/**/*
+data/black_marble/**/*
+data/ghs_pop/**/*
 
 # OS generated files #
 ######################
