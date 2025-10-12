@@ -1,9 +1,11 @@
 import datetime
 import os
 import re
+import time
 from abc import ABC, abstractmethod
 from pathlib import Path, PosixPath
 from typing import Literal
+from zoneinfo import ZoneInfo
 
 import geopandas as gpd
 import pandas as pd
@@ -15,8 +17,9 @@ from pydantic import ConfigDict, validate_call
 from rasterio.windows import from_bounds
 from rioxarray.merge import merge_arrays
 from shapely import box
+from tqdm import tqdm
 
-from conflict_monitoring_ntl.logging import logger
+from conflict_monitoring_ntl.logger import logger
 
 
 class Satellite(ABC):
@@ -71,7 +74,7 @@ class Satellite(ABC):
         if isinstance(date_range, datetime.date):
             date_range = [date_range]
 
-        data_path = Path(__file__).parent.parent.parent / "data" / self.DATA_FOLDER
+        data_path = Path(__file__).parents[2] / "data" / self.DATA_FOLDER
         filepaths = list(data_path.rglob(self.FILE_PATTERN))
 
         matching_files = {}
@@ -109,23 +112,12 @@ class Satellite(ABC):
         Returns:
             xarray.DataArray containing area of interest raster patch.
         """
-        # reproject shape geometry to img CRS
-        patch_bounds = gdf.to_crs(src.crs).total_bounds  # xmin, ymin, xmax, ymax
-
-        # clip SDGSAT patch
-        window = from_bounds(*patch_bounds, transform=src.transform)
-
-        # extract offsets and dimensions (cast to int if needed)
-        row_off = int(window.row_off)
-        col_off = int(window.col_off)
-        h = int(window.height)
-        w = int(window.width)
-
-        da = rioxarray.open_rasterio(src)
-
-        patch = da.isel(  # type: ignore
-            y=slice(row_off, row_off + h), x=slice(col_off, col_off + w)
-        ).load()
+        gdf = gdf.to_crs(src.crs)
+        patch = (
+            rioxarray.open_rasterio(src, masked=True)
+            .rio.clip(gdf.geometry.values, gdf.crs, from_disk=True)
+            .load()
+        )
 
         assert isinstance(patch, xr.DataArray)
 
@@ -209,7 +201,8 @@ class EnMAP(Satellite):
 class SDGSat(Satellite):
     """SDGSat satellite raster data loader and band extraction utility."""
 
-    BAND_MAPPING = {"PL": 1, "PH": 2, "HDR": 3}
+    BAND_MAPPING = {"PL": 1, "PH": 2, "RGB": 3}
+    GAIN_BIAS_MAPPING = {"PL": (8.832, 1.67808), "PH": (8.758, 1.83897)}
 
     @property
     def DATA_FOLDER(self) -> str:
@@ -278,12 +271,12 @@ class SDGSat(Satellite):
             .to_dataset(name=variable, promote_attrs=True)
             .sortby("time")
         )
-        combined = combined.rio.write_crs("EPSG:4326")
+        combined = combined.rio.reproject("EPSG:4326")
 
         return combined
 
 
-class Landsat(Satellite):
+class Landsat:
 
     SERVICE_URL = "https://m2m.cr.usgs.gov/api/api/json/stable"
     DATASET = "landsat_ot_c2_l2"
@@ -298,17 +291,130 @@ class Landsat(Satellite):
         }
         self._cloud_cover_filter = {"min": 0, "max": 20}
 
+    @property
+    def DATA_FOLDER(self) -> str:
+        return "landsat"
+
+    @property
+    def FILE_PATTERN(self) -> str:
+        return "*_LH.tif"  # TODO: update
+
+    @property
+    def DATE_REGEX(self) -> str:
+        return r"\d{8}"  # TODO: update
+
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     def raster(
         self,
         gdf: gpd.GeoDataFrame,
         date_range: datetime.date | list[datetime.date],
-        variable: str | None = None,
-    ) -> xr.Dataset:
+        variable: str | None = None,  # TODO: update
+        timezone: str = "UTC",
+    ) -> xr.Dataset | None:
+
+        self.spatial_filter = gdf
+
+        scenes_df = self._scene_search(date_range)
+        scene_ids = self._get_scenes_between_time(scenes_df, timezone)
+
+        if not scene_ids:
+            cls_name = self.__class__.__name__
+            logger.warning(f"[{cls_name}] No images for given region and date range.")
+            return None
+
+        products = self._get_available_products(scene_ids)
+
+        self._download_products(products)
 
         return xr.Dataset()
 
-    def scene_search(
+    def _download_products(self, products: list[dict]):
+        label = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        download_req_payload = {"downloads": products, "label": label}
+
+        download_request_results = self._send_request(
+            os.path.join(self.SERVICE_URL, "download-request"),
+            download_req_payload,
+            self._api_key,
+        )
+
+        assert isinstance(download_request_results, dict)
+
+        if len(download_request_results["availableDownloads"]) > 0:
+            for result in download_request_results["availableDownloads"]:
+                self._download_file(result["url"])
+        elif len(download_request_results["preparingDownloads"]) > 0:
+
+            preparingDownloadIds = []
+
+            for result in download_request_results["preparingDownloads"]:
+                preparingDownloadIds.append(result["downloadId"])
+
+            download_ret_payload = {"label": label}
+            # Retrieve download URLs
+            print("Retrieving download urls...\n")
+            download_retrieve_results = self._send_request(
+                os.path.join(self.SERVICE_URL, "download-retrieve"),
+                download_ret_payload,
+                self._api_key,
+            )
+
+            assert isinstance(download_retrieve_results, dict)
+
+            if download_retrieve_results:
+                for result in download_retrieve_results["available"]:
+                    if result["downloadId"] in preparingDownloadIds:
+                        preparingDownloadIds.remove(result["downloadId"])
+                        self._download_file(result["url"])
+
+                for result in download_retrieve_results["requested"]:
+                    if result["downloadId"] in preparingDownloadIds:
+                        preparingDownloadIds.remove(result["downloadId"])
+                        self._download_file(result["url"])
+
+            # didn't get all download URLs, retrieve again after 30 seconds
+            while len(preparingDownloadIds) > 0:
+                print(
+                    f"{len(preparingDownloadIds)} downloads are not available yet. "
+                    "Waiting for 30s to retrieve again\n"
+                )
+
+                time.sleep(30)
+                download_retrieve_results = self._send_request(
+                    os.path.join(self.SERVICE_URL, "download-retrieve"),
+                    download_ret_payload,
+                    self._api_key,
+                )
+
+                assert isinstance(download_retrieve_results, dict)
+
+                if download_retrieve_results:
+                    for result in download_retrieve_results["available"]:
+                        if result["downloadId"] in preparingDownloadIds:
+                            preparingDownloadIds.remove(result["downloadId"])
+                            self._download_file(result["url"])
+
+    def _get_available_products(self, scene_ids: list[str]) -> list[dict]:
+        download_payload = {"datasetName": self.DATASET, "entityIds": scene_ids}
+        download_options = self._send_request(
+            os.path.join(self.SERVICE_URL, "download-options"),
+            download_payload,
+            self._api_key,
+        )
+
+        assert isinstance(download_options, dict)
+
+        # filter out only necessary products
+        df = pd.json_normalize(download_options)
+        df = df[(df.available) & (df.downloadSystem != "folder")]
+
+        return (
+            df[["entityId", "id"]]
+            .rename(columns={"id": "productId"})
+            .to_dict("records")
+        )
+
+    def _scene_search(
         self, date_range: datetime.date | list[datetime.date]
     ) -> pd.DataFrame:
         if isinstance(date_range, datetime.date):
@@ -322,33 +428,53 @@ class Landsat(Satellite):
             api_key=self._api_key,
         )
 
+        assert isinstance(scenes, dict)
+
         return pd.json_normalize(scenes["results"])
 
-    def get_scenes_between_time(
+    def _get_scenes_between_time(
         self,
         scenes_df: pd.DataFrame,
-        start_time: datetime.time = datetime.time(9, 0, 0),
-        end_time: datetime.time = datetime.time(11, 0, 0),
+        timezone: str,
+        start_time: datetime.time = datetime.time(21, 0, 0),
+        end_time: datetime.time = datetime.time(3, 0, 0),
     ) -> list[str]:
 
-        def get_time(meta_list, field):
+        def get_datetime(meta_list, field):
             time_pattern = "%Y-%m-%d %H:%M:%S"
             for d in meta_list:
                 if d["fieldName"] == field:
-                    return datetime.datetime.strptime(d["value"], time_pattern).time()
+                    # Remove microseconds if present
+                    dt_str = d["value"][:19]
+                    dt = datetime.datetime.strptime(dt_str, time_pattern)
+                    dt_utc = dt.replace(tzinfo=ZoneInfo("UTC"))
+                    dt_local = dt_utc.astimezone(ZoneInfo(timezone))
+                    return dt_local
 
-        def is_in_time_window(start_t, stop_t):
-            if start_time <= stop_t or stop_t <= end_time:
-                return True
-            if start_time <= start_t or start_t <= end_time:
-                return True
-            return False
+        def get_evening_anchor(dt):
+            # shifts anchor to 'date of evening' (not after midnight)
+            if dt.time() < end_time:
+                return (dt - datetime.timedelta(days=1)).date()
+            else:
+                return dt.date()
+
+        def is_within_evening(dt):
+            # time must be between 21:00 - 23:59:59, OR 00:00 - 02:59:59
+            return start_time <= dt.time() or dt.time() < end_time
+
+        def is_in_time_window(start, end):
+            return (
+                get_evening_anchor(start) == get_evening_anchor(end)
+                and is_within_evening(start)
+                and is_within_evening(end)
+                and start <= end
+            )
 
         scenes_df["start_time"] = scenes_df["metadata"].apply(
-            lambda meta: get_time(meta, "Start Time")  # type: ignore
+            lambda meta: get_datetime(meta, "Start Time")  # type: ignore
         )
         scenes_df["stop_time"] = scenes_df["metadata"].apply(
-            lambda meta: get_time(meta, "Stop Time")  # type: ignore
+            lambda meta: get_datetime(meta, "Stop Time")  # type: ignore
         )
 
         filtered_df = scenes_df[
@@ -452,7 +578,7 @@ class Landsat(Satellite):
         Parameters:
             url: The endpoint URL to which the request is sent.
             data: Dictionary payload to send as the JSON body of the request.
-            api_key: Authentication token added to the 'X-Auth-Token' header if provided.
+            api_key: Authentication token added to the 'X-Auth-Token' header.
 
         Returns:
             dict or None: The value of the 'data' field from the JSON response,
@@ -470,18 +596,39 @@ class Landsat(Satellite):
 
         return output.get("data")
 
-    @staticmethod
-    def download_file(url: str, out_dir: Path):
-        # TODO: update
+    def _download_file(self, url: str):
+        output_dir = Path(__file__).parents[2] / "data" / self.DATA_FOLDER
         try:
             response = requests.get(url, stream=True)
-            disposition = response.headers["content-disposition"]
-            filename = re.findall("filename=(.+)", disposition)[0].strip('"')
-            print(f"    Downloading: {filename} -- {url}...")
+            response.raise_for_status()
 
-            open(os.path.join(out_dir, filename), "wb").write(response.content)
+            # Attempt to fetch filename from headers, fallback if needed
+            disposition = response.headers.get("content-disposition")
+            if disposition:
+                filenames = re.findall('filename="?([^"]+)"?', disposition)
+                filename = filenames[0] if filenames else url.split("/")[-1]
+            else:
+                filename = url.split("/")[-1]
+
+            # ensure output directory exists
+            os.makedirs(output_dir, exist_ok=True)
+            file_path = os.path.join(output_dir, filename)
+
+            total = int(response.headers.get("content-length", 0))
+            chunk_size = 1024
+
+            with (
+                open(file_path, "wb") as f,
+                tqdm(total=total, unit="B", unit_scale=True, desc=filename) as bar,
+            ):
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    if chunk:
+                        f.write(chunk)
+                        bar.update(len(chunk))
+
+            # TODO: untar the file
         except Exception as e:
-            print(f"\nFailed to download from {url}.")
+            print(f"\nFailed to download from {url}: {e}")
 
 
 class ErsLoginError(Exception):

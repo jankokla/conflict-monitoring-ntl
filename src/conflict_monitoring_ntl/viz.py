@@ -77,6 +77,7 @@ def plot_map_with_shape(
 
     center = [gdf.geometry.centroid.y.mean(), gdf.geometry.centroid.x.mean()]
 
+    # tiles="CartoDB Positron"
     m = folium.Map(location=center, zoom_start=zoom_start, tiles=None)
 
     # add base layer from ESRI

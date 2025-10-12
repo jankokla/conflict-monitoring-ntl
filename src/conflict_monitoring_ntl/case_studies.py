@@ -16,6 +16,7 @@ class CaseStudy:
     date: datetime.date
     region_type: Literal["rural", "peri-urban", "urban"]
     shapefile_path: Path
+    timezone: str
 
     @property
     def gdf(self):
@@ -66,6 +67,7 @@ def _load_case_studies(region_type):
             datetime.date.fromisoformat(str(entry["date"])),
             region_type,
             Path(entry["shapefile"]),
+            entry["timezone"],
         )
         for entry in data[region_type]
     }
