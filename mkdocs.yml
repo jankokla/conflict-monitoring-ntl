@@ -9,6 +9,7 @@ nav:
       - Quantification: analysis/quantification.md
       - Regions: notebooks/cities.ipynb
       - Plotting: notebooks/plotting.ipynb
+      - Population Grid: notebooks/ghs_population.ipynb
   - System Design:
       - SDK: system_design/sdk.md
   - User Guide:
@@ -58,3 +59,9 @@ markdown_extensions:
   - attr_list
   - pymdownx.snippets
   - footnotes
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js

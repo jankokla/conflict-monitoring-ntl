@@ -113,3 +113,12 @@ def plot_map_with_shape(
         folium.LayerControl().add_to(m)
 
     return m
+
+
+if __name__ == "__main__":
+    a = (
+        bm_xds.squeeze("time", drop=True)
+        .drop_attrs()[["average"]]
+        .rename({"average": "black_marble"})
+        .transpose("lat", "lon")
+    )
