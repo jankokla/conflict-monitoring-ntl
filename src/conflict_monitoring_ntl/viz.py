@@ -115,10 +115,20 @@ def plot_map_with_shape(
     return m
 
 
-if __name__ == "__main__":
-    a = (
-        bm_xds.squeeze("time", drop=True)
-        .drop_attrs()[["average"]]
-        .rename({"average": "black_marble"})
-        .transpose("lat", "lon")
-    )
+def plot_layer_comparison(xds: xr.Dataset):
+    _, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
+
+    xds["sdgsat"].plot(ax=ax1, cmap="inferno", robust=True)
+    ax1.set_title("SDGSAT")
+    ax1.axis("off")
+
+    xds["black_marble"].plot(ax=ax2, cmap="inferno", robust=True, vmin=0, vmax=1.5)
+    ax2.set_title("BlackMarble VIIRS")
+    ax2.axis("off")
+
+    xds["population_count"].plot(ax=ax3, cmap="coolwarm", center=0, robust=True, vmin=0)
+    ax3.set_title("Population Count")
+    ax3.axis("off")
+
+    plt.tight_layout()
+    plt.show()
