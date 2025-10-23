@@ -4,16 +4,15 @@ extra_css:
   - stylesheets/extra.css
 
 nav:
-  - Analysis:
+  - Background:
       - Satellites: analysis/satellites.md
-      - Quantification: analysis/quantification.md
-      - Regions: notebooks/cities.ipynb
-      - Plotting: notebooks/plotting.ipynb
-      - Population Grid: notebooks/ghs_population.ipynb
+      - Ideation: analysis/ideation.md
+  - Preprocessing:
+      - Site Selection: notebooks/site_selection.ipynb
+      - Study Areas: notebooks/study_areas.ipynb
+      - Data Analysis: notebooks/data_analysis.ipynb
   - System Design:
       - SDK: system_design/sdk.md
-  - User Guide:
-      - Compare Images: notebooks/example_comparison.ipynb
 
 theme:
   name: material
@@ -41,7 +40,10 @@ theme:
 
 plugins:
   - search
-  - mkdocs-jupyter
+  - mkdocs-jupyter:
+      remove_tag_config:
+        remove_input_tags:
+          - hide_code
   - panzoom
   - d2
   - mkdocstrings:

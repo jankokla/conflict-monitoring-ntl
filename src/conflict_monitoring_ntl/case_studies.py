@@ -8,6 +8,19 @@ import geopandas as gpd
 import yaml
 from dateutil.relativedelta import relativedelta
 
+RURAL_COUNTRIES = Literal[
+    "Sudan",
+    "Mali",
+    "Syria",
+    "Central African Republic",
+    "Democratic Republic of the Congo",
+    "Yemen",
+    "Ethiopia",
+    "Myanmar",
+    "Nigeria",
+    "South Sudan",
+]
+
 
 @dataclass(frozen=True)
 class CaseStudy:
@@ -79,3 +92,61 @@ CaseStudiesPeriUrban: SimpleNamespace = _load_case_studies("peri-urban")
 CaseStudiesUrban: SimpleNamespace = _load_case_studies("urban")
 
 # to get all: CaseStudy.all(CaseStudyRural)
+
+
+def get_tiles_paths(country: RURAL_COUNTRIES | None = None) -> list[tuple] | tuple:
+    """
+    Retrieves a list of full pathlib.Path objects for SDGSAT tile files,
+    for a specific country or all countries, from the YAML file.
+
+    Args:
+        country: Name of the country as a string (e.g., 'Sudan').
+            If None, retrieves paths for all countries.
+
+    Returns:
+        List of pathlib.Path objects for the specified country's tiles,
+            or for all tiles if no country specified.
+    """
+    yaml_path = Path(__file__).parents[2] / "config" / "admin-level-2.yaml"
+    tiles_root = Path(__file__).parents[2] / "data" / "sdgsat"
+
+    with open(yaml_path, "r") as f:
+        tile_data = yaml.safe_load(f)
+
+    tile_paths = []
+    if country:
+        country_tiles = tile_data.get(country)
+        if country_tiles:
+            return tuple([tiles_root / t for t in country_tiles.get("tiles")])
+    else:
+        for info in tile_data.values():
+            tile_paths.append(tuple([tiles_root / t for t in info.get("tiles", [])]))
+
+    return tile_paths
+
+
+def get_area_of_interest(country: RURAL_COUNTRIES) -> str:
+    # TODO: add docstring
+    yaml_path = Path(__file__).parents[2] / "config" / "admin-level-2.yaml"
+    with open(yaml_path, "r") as f:
+        tile_data = yaml.safe_load(f)
+        country_tiles = tile_data.get(country)
+        return country_tiles.get("osm")
+
+
+def get_county_ids(country: RURAL_COUNTRIES) -> list[str]:
+    # TODO: add docstring
+    yaml_path = Path(__file__).parents[2] / "config" / "admin-level-2.yaml"
+    with open(yaml_path, "r") as f:
+        tile_data = yaml.safe_load(f)
+        country_tiles = tile_data.get(country)
+        return country_tiles.get("regions")
+
+
+def get_date(country: RURAL_COUNTRIES) -> datetime.date:
+    # TODO: add docstring
+    yaml_path = Path(__file__).parents[2] / "config" / "admin-level-2.yaml"
+    with open(yaml_path, "r") as f:
+        tile_data = yaml.safe_load(f)
+        country_tiles = tile_data.get(country)
+        return country_tiles.get("date")

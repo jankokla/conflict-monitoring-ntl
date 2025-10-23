@@ -116,9 +116,10 @@ def plot_map_with_shape(
 
 
 def plot_layer_comparison(xds: xr.Dataset):
+    # TODO: add docstring
     _, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
 
-    xds["sdgsat"].plot(ax=ax1, cmap="inferno", robust=True)
+    xds["sdgsat_radiance"].plot(ax=ax1, cmap="inferno", robust=True)
     ax1.set_title("SDGSAT")
     ax1.axis("off")
 
@@ -132,3 +133,42 @@ def plot_layer_comparison(xds: xr.Dataset):
 
     plt.tight_layout()
     plt.show()
+
+
+def plot_admin_map_with_tiles(
+    country_gdf: gpd.GeoDataFrame,
+    raster_gdf: gpd.GeoDataFrame,
+    admin_gdf: gpd.GeoDataFrame,
+    base_map: str = "CartoDB positron",
+    zoom_start: int = 7,
+) -> folium.Map:
+    # TODO: add docstring
+    centroid = country_gdf.geometry[0].centroid
+    m = folium.Map(
+        location=[centroid.y, centroid.x], zoom_start=zoom_start, tiles=base_map
+    )
+
+    folium.GeoJson(
+        data=raster_gdf.geometry,
+        name="Raster coverage",
+        style_function=lambda x: {"fillColor": "black", "color": "black", "weight": 1},
+    ).add_to(m)
+
+    for _, row in admin_gdf.iterrows():
+        color = "#07407B" if row.is_within_raster else "#F7931F"
+        folium.GeoJson(
+            data=row.geometry,
+            name="Districts",
+            style_function=lambda x, color=color: {
+                "fillColor": color,
+                "color": color,
+                "weight": 1,
+            },
+        ).add_to(m)
+
+    folium.GeoJson(
+        data=country_gdf.iloc[0].geometry,
+        style_function=lambda x: {"fillColor": "none", "color": "grey", "weight": 2},
+    ).add_to(m)
+
+    return m

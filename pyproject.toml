@@ -21,6 +21,10 @@ dependencies = [
     "datashader>=0.18.2",
     "geemap>=0.36.4",
     "xee>=0.0.22",
+    "leafmap>=0.53.4",
+    "hvplot>=0.12.1",
+    "osmnx>=2.0.6",
+    "pygadm>=0.5.3",
 ]
 
 [dependency-groups]

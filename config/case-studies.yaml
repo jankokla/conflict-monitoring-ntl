@@ -16,7 +16,7 @@ rural:
   - id: DEIR_EZ_ZOR
     country: Syria
     city: Deir ez-Zor
-    date: 2024-12-28
+    date: 2023-12-28
     shapefile: syria/deir-ez-zor.shp
     timezone: Asia/Damascus
 

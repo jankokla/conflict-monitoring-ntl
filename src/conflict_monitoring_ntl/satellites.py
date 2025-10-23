@@ -14,7 +14,6 @@ import requests
 import rioxarray
 import xarray as xr
 from pydantic import ConfigDict, validate_call
-from rasterio.windows import from_bounds
 from rioxarray.merge import merge_arrays
 from shapely import box
 from tqdm import tqdm

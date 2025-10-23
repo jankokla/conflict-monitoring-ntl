@@ -1,0 +1,162 @@
+Sudan:
+    date: 2023-12-12
+    osm: "Nyala"
+    tiles:
+        - KX10_GIU_20231212_E25.96_N11.42_202300439391_L4A/KX10_GIU_20231212_E25.96_N11.42_202300439391_L4A_A_LH.tif
+        - KX10_GIU_20231212_E25.96_N11.42_202300439391_L4A/KX10_GIU_20231212_E25.96_N11.42_202300439391_L4A_B_LH.tif
+    regions:
+        - SDN.5.2_1
+        - SDN.14.5_1
+    timezone: Africa/Khartoum
+    admin_level_2: []
+
+Mali:
+    date: 2024-01-30
+    osm: "Mopti, Mali"
+    tiles:
+        - KX10_GIU_20240130_W3.13_N14.74_202400009988_L4A/KX10_GIU_20240130_W3.13_N14.74_202400009988_L4A_A_LH.tif
+        - KX10_GIU_20240130_W3.13_N14.74_202400009988_L4A/KX10_GIU_20240130_W3.13_N14.74_202400009988_L4A_B_LH.tif
+    regions:
+        - MLI.6.1_1
+        - MLI.6.2_1
+        - MLI.6.5_1
+        - MLI.6.6_1
+    timezone: Africa/Bamako
+    admin_level_2: [Bandiagara, Koro]
+
+Syria:
+    date: 2023-12-28
+    osm: "Deir ez-Zor"
+    tiles:
+        - KX10_GIU_20231228_E40.41_N36.53_202300444436_L4A/KX10_GIU_20231228_E40.41_N36.53_202300444436_L4A_A_LH.tif
+        - KX10_GIU_20231228_E40.41_N36.53_202300444436_L4A/KX10_GIU_20231228_E40.41_N36.53_202300444436_L4A_B_LH.tif
+    regions:
+        - SYR.1.1_1
+        - SYR.1.2_1
+        - SYR.1.3_1
+        - SYR.1.4_1
+        - SYR.3.1_1
+        - SYR.3.3_1
+    timezone: Asia/Damascus
+    admin_level_2: [Hassakeh, Ras_Al_Ain]
+
+Central African Republic:
+    date: 2023-02-17
+    osm: "Kaga-Bandoro"
+    tiles:
+        - KX10_GIU_20230217_E19.14_N7.16_202300022487_L4A/KX10_GIU_20230217_E19.14_N7.16_202300022487_L4A_A_LH.tif
+        - KX10_GIU_20230217_E19.14_N7.16_202300022487_L4A/KX10_GIU_20230217_E19.14_N7.16_202300022487_L4A_B_LH.tif
+    regions:
+        - CAF.6.1_1
+        - CAF.10.1_1
+        - CAF.10.2_1
+        - CAF.15.3_1
+        - CAF.15.4_1
+    timezone: Africa/Bangui
+    admin_level_2: [Kabo, Dékoa, Mala, Mbrès, Kaga-Bandoro]
+
+Democratic Republic of the Congo:
+    date: 2024-05-28
+    osm: "Katana, Democratic Republic of the Congo"
+    tiles:
+        - KX10_GIU_20240528_E29.16_S1.97_202400055726_L4A/KX10_GIU_20240528_E29.16_S1.97_202400055726_L4A_A_LH.tif
+        - KX10_GIU_20240528_E29.16_S1.97_202400055726_L4A/KX10_GIU_20240528_E29.16_S1.97_202400055726_L4A_B_LH.tif
+    regions:
+        - COD.19.3_1
+        - COD.19.5_1
+        - COD.19.6_1
+        - COD.19.9_1
+        - COD.19.10_1
+        - COD.22.2_1
+        - COD.22.4_1
+        - COD.22.5_1
+        - COD.22.6_1
+        - COD.22.7_1
+        - COD.22.12_1
+        - COD.22.13_1
+    timezone: Africa/Kinshasa
+    admin_level_2: []
+
+Yemen:
+    date: 2024-12-22
+    osm: "Hodeidah, Yemen"
+    tiles:
+        - KX10_GIU_20241222_E44.84_N13.96_202400137536_L4A/KX10_GIU_20241222_E44.84_N13.96_202400137536_L4A_A_LH.tif
+        - KX10_GIU_20241222_E44.84_N13.96_202400137536_L4A/KX10_GIU_20241222_E44.84_N13.96_202400137536_L4A_B_LH.tif
+    timezone: Asia/Aden
+    admin_level_2: []
+
+Ethiopia:
+    date: 2024-03-28
+    osm: "Mek'elē, Tigray, Ethiopia"
+    tiles:
+        - KX10_GIU_20240328_E38.56_N13.11_202400034802_L4A/KX10_GIU_20240328_E38.56_N13.11_202400034802_L4A_A_LH.tif
+        - KX10_GIU_20240328_E38.56_N13.11_202400034802_L4A/KX10_GIU_20240328_E38.56_N13.11_202400034802_L4A_B_LH.tif
+    regions:
+        - ETH.3.3_1
+        - ETH.3.12_1
+        - ETH.11.1_1
+        - ETH.11.2_1
+        - ETH.11.4_1
+    timezone: Africa/Addis_Ababa
+    admin_level_2: []
+
+Myanmar:
+    date: 2024-01-03
+    osm: "Sittwe, Myanmar"
+    tiles:
+        - KX10_GIU_20240103_E93.49_N20.06_202400000995_L4A/KX10_GIU_20240103_E93.49_N20.06_202400000995_L4A_A_LH.tif
+        - KX10_GIU_20240103_E93.49_N20.06_202400000995_L4A/KX10_GIU_20240103_E93.49_N20.06_202400000995_L4A_B_LH.tif
+    regions:
+        - MMR.7.2_1
+        - MMR.11.1_1
+        - MMR.11.3_1
+        - MMR.11.4_1
+    timezone: Asia/Yangon
+    admin_level_2: []
+
+Nigeria:
+    date: 2024-12-04
+    osm: "Maiduguri, Nigeria"
+    tiles:
+        - KX10_GIU_20241204_E14.11_N11.66_202400129130_L4A/KX10_GIU_20241204_E14.11_N11.66_202400129130_L4A_A_LH.tif
+        - KX10_GIU_20241204_E14.11_N11.66_202400129130_L4A/KX10_GIU_20241204_E14.11_N11.66_202400129130_L4A_B_LH.tif
+    regions:
+        - NGA.2.7_1
+        - NGA.2.10_1
+        - NGA.2.13_1
+        - NGA.2.14_1
+        - NGA.2.15_1
+        - NGA.8.2_1
+        - NGA.8.3_1
+        - NGA.8.6_1
+        - NGA.8.8_1
+        - NGA.8.9_1
+        - NGA.8.10_1
+        - NGA.8.11_1
+        - NGA.8.13_1
+        - NGA.8.15_1
+        - NGA.8.16_1
+        - NGA.8.20_1
+        - NGA.8.22_1
+        - NGA.8.23_1
+        - NGA.8.25_1
+        - NGA.8.26_1
+        - NGA.8.27_1
+    timezone: Africa/Lagos
+    admin_level_2: []
+
+South Sudan:
+    date: 2024-12-24
+    osm: "Tiep Payam"
+    tiles:
+        - KX10_GIU_20241224_E31.20_N7.57_202400138578_L4A/KX10_GIU_20241224_E31.20_N7.57_202400138578_L4A_A_LH.tif
+        - KX10_GIU_20241224_E31.20_N7.57_202400138578_L4A/KX10_GIU_20241224_E31.20_N7.57_202400138578_L4A_B_LH.tif
+    regions:
+        - SSD.3.1_1
+        - SSD.3.2_1
+        - SSD.3.7_1
+        - SSD.4.4_1
+        - SSD.6.1_1
+    timezone: Africa/Juba
+    admin_level_2: []

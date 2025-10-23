@@ -1,10 +1,13 @@
 import datetime
+from typing import Literal
 
 import ee
 import geemap
+import geopandas as gpd
+import numpy as np
+import pygadm
 import xarray as xr
 from ee.featurecollection import FeatureCollection
-from ee.filter import Filter
 from ee.image import Image
 from rasterio.enums import Resampling
 
@@ -17,26 +20,48 @@ except ee.ee_exception.EEException:
     ee.Initialize()
 
 
-ADMIN_UNIT_DS = "FAO/GAUL/2015/level2"
+# gain, bias, bandwidth (in micrometers)
+SDGSAT_COEF_MAPPING = {
+    "PH": (0.00008757, 0.0000183897, 0.675),
+    "PL": (0.00008832, 0.0000167808, 0.675),
+}
 
 
-def get_rasters_for_admin(admin_name: str, date: datetime.date) -> xr.Dataset:
-    admin = _get_feature_collection(admin_name)
-    gdf = geemap.ee_to_gdf(admin)
+def get_rasters_for_admin(
+    admin_id: str,
+    date: datetime.date,
+    is_sdgsat: bool = True,
+    is_ghspop: bool = False,
+    sdgsat_dn: Literal["PL", "PH", "HDR"] = "PL",
+    **kwargs,
+) -> xr.Dataset:
+    # TODO: add docstring
+    county_gdf, county_ee = _get_gdf_ee_for_admin(admin_id)
 
-    ghs_xds = _get_layer_from_ee("JRC/GHSL/P2023A/GHS_POP/2020", admin)
-    bm_xds = _get_layer_from_ee("NOAA/VIIRS/DNB/ANNUAL_V22/20240101", admin)
+    date_str = date.strftime("%Y_%m_%d")
+    bm_xds = _get_layer_from_ee(f"NASA/VIIRS/002/VNP46A2/{date_str}", county_ee)
 
-    sdgsat = SDGSat()
-    sdgsat_xds = sdgsat.raster(gdf, [date], variable="PH")
+    arrays = []
 
-    assert isinstance(sdgsat_xds, xr.Dataset)
+    if is_ghspop:
+        ghs_xds = _get_layer_from_ee("JRC/GHSL/P2023A/GHS_POP/2020", county_ee)
+        ghs_xds = _standardize_ghs_pop(ghs_xds, bm_xds)
+        arrays.append(ghs_xds)
 
-    ghs_xds = _standardize_ghs_pop(ghs_xds, bm_xds)
-    sdgsat_xds = _standardize_sdgsat(sdgsat_xds, bm_xds)
-    bm_xds = _standardize_black_marble(bm_xds)
+    if is_sdgsat:
+        sdgsat = SDGSat()
+        sdgsat_xds = sdgsat.raster(county_gdf, [date], variable=sdgsat_dn)
 
-    return xr.merge([ghs_xds, sdgsat_xds, bm_xds])
+        assert isinstance(sdgsat_xds, xr.Dataset)
+        sdgsat_xds = _standardize_sdgsat(
+            sdgsat_xds, bm_xds, sdgsat_dn=sdgsat_dn, **kwargs
+        )
+        arrays.append(sdgsat_xds)
+
+    bm_xds = _standardize_black_marble(bm_xds, **kwargs)
+    arrays.append(bm_xds)
+
+    return xr.merge(arrays).rio.write_crs("EPSG:4326")
 
 
 def _get_layer_from_ee(product: str, clip: FeatureCollection) -> xr.Dataset:
@@ -48,16 +73,33 @@ def _get_layer_from_ee(product: str, clip: FeatureCollection) -> xr.Dataset:
     )
 
 
-def _standardize_black_marble(xds: xr.Dataset) -> xr.Dataset:
+def _standardize_black_marble(
+    xds: xr.Dataset,
+    bm_is_binary: bool = True,
+    bm_binary_thresholds: list[float] = [0.5, 1.0],
+    **kwargs,
+) -> xr.Dataset:
+    # TODO: add docstring
+    band = "Gap_Filled_DNB_BRDF_Corrected_NTL"
+    xds = xds[[band]]
+
+    if bm_is_binary:
+        DN = xds[band]
+        for thresh in bm_binary_thresholds:
+            threshold_str = str(thresh).replace(".", "_")
+            xds[f"black_marble_binary_{threshold_str}"] = xr.where(
+                DN.notnull(), (DN > thresh).astype(int), np.nan
+            )
+
     return (
         xds.squeeze("time", drop=True)
-        .drop_attrs()[["average"]]
-        .rename({"average": "black_marble"})
+        .rename({band: "black_marble_radiance"})
         .transpose("lat", "lon")
     )
 
 
 def _standardize_ghs_pop(xds: xr.Dataset, ref_xds: xr.Dataset) -> xr.Dataset:
+    # TODO: add docstring
     xds = xds.rename({"X": "x", "Y": "y"}).transpose("time", "y", "x")
 
     xds = xds.rio.reproject_match(
@@ -73,35 +115,57 @@ def _standardize_ghs_pop(xds: xr.Dataset, ref_xds: xr.Dataset) -> xr.Dataset:
     )
 
 
-def _standardize_sdgsat(xds: xr.Dataset, ref_xds: xr.Dataset) -> xr.Dataset:
+def _standardize_sdgsat(
+    xds: xr.Dataset,
+    ref_xds: xr.Dataset,
+    sdgsat_dn: str = "PL",
+    is_radiance: bool = True,
+    is_binary: bool = True,
+    sdgsat_binary_thresholds: list[float] = [4.0],
+    **kwargs,
+) -> xr.Dataset:
+    # TODO: add docstring
+    DN = xds[sdgsat_dn]
 
-    bandwidth = 0.675  # in micrometers
-    gain = 0.00008757
-    bias = 0.0000183897
+    if is_radiance:
 
-    DN = xds["PH"]
+        gain, bias, bw = SDGSAT_COEF_MAPPING[sdgsat_dn]
 
-    # Only apply to non-NaN and nonzero values
-    cond = (~DN.isnull()) & (DN != 0)
-    L = DN * gain + bias
+        # only apply to non-NaN and nonzero values
+        cond = (~DN.isnull()) & (DN != 0)
+        L = DN * gain + bias
 
-    xds["radiance"] = xr.where(cond, L * 1e5 * bandwidth, DN)
+        xds["sdgsat_radiance"] = xr.where(cond, L * 1e5 * bw, DN)
 
     xds = xds.rio.reproject_match(
         ref_xds.rename({"lon": "x", "lat": "y"}),  # since func can only read x-y
         resampling=Resampling.average,
     )
 
+    if is_binary:
+        DN = xds[sdgsat_dn]
+        for thresh in sdgsat_binary_thresholds:
+            threshold_str = str(thresh).replace(".", "_")
+            xds[f"sdgsat_binary_{threshold_str}"] = xr.where(
+                DN.notnull(), (DN > thresh).astype(int), np.nan
+            )
+
     return (
         xds.squeeze("time", drop=True)
         .drop_attrs()
-        .drop_vars(["spatial_ref", "PH"])
-        .rename({"x": "lon", "y": "lat", "radiance": "sdgsat"})
+        .drop_vars(["spatial_ref"])
+        .rename({"x": "lon", "y": "lat", sdgsat_dn: "sdgsat_dn"})
     )
 
 
-def _get_feature_collection(
-    value: str, feature: str = "ADM2_NAME"
-) -> FeatureCollection:
-    countries = FeatureCollection(ADMIN_UNIT_DS)
-    return countries.filter(Filter.eq(feature, value))
+def _get_gdf_ee_for_admin(
+    admin_id: str, content_level: int = 2
+) -> tuple[gpd.GeoDataFrame, FeatureCollection]:
+    # TODO: add docstring
+    county_gdf = pygadm.Items(admin=admin_id, content_level=content_level)  # type: ignore
+    county_gdf.set_crs("EPSG:4326", inplace=True)
+    county_ee = geemap.gdf_to_ee(county_gdf)
+
+    assert isinstance(county_ee, FeatureCollection)
+
+    return county_gdf, county_ee
