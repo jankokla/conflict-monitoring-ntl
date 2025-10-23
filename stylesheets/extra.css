@@ -1,0 +1,13 @@
+:root {
+  --md-primary-fg-color: #19183B;
+  --md-mermaid-node-fg-color: #A1C2BD;
+  --md-accent-fg-color: #A1C2BD;
+}
+
+.md-footer {
+    display: none;
+}
+
+.md-typeset a {
+  text-decoration: underline;
+}
