@@ -1,18 +1,24 @@
 import datetime
+import logging
 import os
 import re
 import time
+import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path, PosixPath
 from typing import Literal
 from zoneinfo import ZoneInfo
 
+import ee
+import geemap
 import geopandas as gpd
 import pandas as pd
 import rasterio
 import requests
 import rioxarray
 import xarray as xr
+from ee.featurecollection import FeatureCollection
+from ee.image import Image
 from pydantic import ConfigDict, validate_call
 from rioxarray.merge import merge_arrays
 from shapely import box
@@ -20,23 +26,21 @@ from tqdm import tqdm
 
 from conflict_monitoring_ntl.logger import logger
 
+logging.getLogger("pyogrio._io").setLevel(logging.WARNING)
 
-class Satellite(ABC):
 
-    @property
-    @abstractmethod
-    def DATA_FOLDER(self) -> str:
-        pass
+warnings.filterwarnings(
+    "ignore",
+    message="Connection pool is full, discarding connection*",
+    module="urllib3.connectionpool",
+)
 
-    @property
-    @abstractmethod
-    def FILE_PATTERN(self) -> str:
-        pass
 
-    @property
-    @abstractmethod
-    def DATE_REGEX(self) -> str:
-        pass
+class BaseRaster(ABC):
+
+    DATA_FOLDER = ""
+    FILE_PATTERN = ""
+    DATE_REGEX = ""
 
     @abstractmethod
     def raster(
@@ -100,6 +104,17 @@ class Satellite(ABC):
         return matching_files
 
     @staticmethod
+    def _get_layer_from_ee(product, clip: FeatureCollection) -> xr.Dataset:
+        # TODO: add docstring
+
+        image = Image(product)
+        pop = image.clip(clip)
+
+        return geemap.ee_to_xarray(
+            pop, geometry=clip.geometry(), projection=pop.projection()
+        )
+
+    @staticmethod
     def _get_patch(gdf: gpd.GeoDataFrame, src: rasterio.DatasetReader) -> xr.DataArray:
         """
         Extract raster patch matching geometry and CRS.
@@ -123,7 +138,119 @@ class Satellite(ABC):
         return patch
 
 
-class EnMAP(Satellite):
+class GHSLPopulation(BaseRaster):
+
+    PRODUCT = "JRC/GHSL/P2023A/GHS_POP/2020"
+
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+    def raster(
+        self,
+        gdf: gpd.GeoDataFrame,
+        date_range: datetime.date | list[datetime.date],
+        variable: str = "population_count",
+    ) -> xr.Dataset | None:
+
+        try:
+            ee.Initialize()
+        except ee.ee_exception.EEException:
+            ee.Authenticate()
+            ee.Initialize()
+
+        if isinstance(date_range, list):
+            assert len(date_range) == 1
+            date_range = date_range[0]
+
+        ee_clip = geemap.gdf_to_ee(gdf)
+        assert isinstance(ee_clip, FeatureCollection)
+
+        ds = self._get_layer_from_ee(self.PRODUCT, ee_clip)
+
+        ds = (
+            ds[[variable]]
+            .rename({"X": "x", "Y": "y"})
+            .transpose("time", "y", "x")
+            .rio.reproject("EPSG:4326")
+        )
+        ds = ds.rename({"x": "lon", "y": "lat", variable: "ghsl_population"})
+        ds.attrs["crs"] = "EPSG:4326"
+
+        return ds.drop_vars("spatial_ref").squeeze("time", drop=True)
+
+
+class GHSLSurface(BaseRaster):
+
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+    def raster(
+        self,
+        gdf: gpd.GeoDataFrame,
+        date_range: datetime.date | list[datetime.date],
+        variable: str = "built_surface",
+    ) -> xr.Dataset:
+
+        try:
+            ee.Initialize()
+        except ee.ee_exception.EEException:
+            ee.Authenticate()
+            ee.Initialize()
+
+        if isinstance(date_range, list):
+            assert len(date_range) == 1
+            date_range = date_range[0]
+
+        ee_clip = geemap.gdf_to_ee(gdf)
+        assert isinstance(ee_clip, FeatureCollection)
+
+        product = "JRC/GHSL/P2023A/GHS_BUILT_S/2020"
+
+        ds = self._get_layer_from_ee(product, ee_clip)
+
+        ds = (
+            ds[[variable]]
+            .rename({"X": "x", "Y": "y"})
+            .transpose("time", "y", "x")
+            .rio.reproject("EPSG:4326")
+        )
+        ds = ds.rename({"x": "lon", "y": "lat", variable: "ghsl_surface"})
+        ds.attrs["crs"] = "EPSG:4326"
+
+        return ds.drop_vars("spatial_ref").squeeze("time", drop=True)
+
+
+class BlackMarble(BaseRaster):
+
+    PRODUCT_BASE = "NASA/VIIRS/002/VNP46A2"
+
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+    def raster(
+        self,
+        gdf: gpd.GeoDataFrame,
+        date_range: datetime.date | list[datetime.date],
+        variable: str = "Gap_Filled_DNB_BRDF_Corrected_NTL",
+    ) -> xr.Dataset:
+
+        try:
+            ee.Initialize()
+        except ee.ee_exception.EEException:
+            ee.Authenticate()
+            ee.Initialize()
+
+        if isinstance(date_range, list):
+            assert len(date_range) == 1
+            date_range = date_range[0]
+
+        ee_clip = geemap.gdf_to_ee(gdf)
+        assert isinstance(ee_clip, FeatureCollection)
+
+        date_str = date_range.strftime("%Y_%m_%d")
+        product = f"NASA/VIIRS/002/VNP46A2/{date_str}"
+
+        ds = self._get_layer_from_ee(product, ee_clip)
+        ds = ds[[variable]].rename({variable: "black_marble_radiance"})
+
+        return ds.squeeze("time", drop=True)
+
+
+class EnMAP(BaseRaster):
     """EnMAP satellite raster data loader and band extraction utility."""
 
     BANDS = [10, 26, 44]
@@ -197,11 +324,14 @@ class EnMAP(Satellite):
         return combined
 
 
-class SDGSat(Satellite):
+class SDGSat(BaseRaster):
     """SDGSat satellite raster data loader and band extraction utility."""
 
     BAND_MAPPING = {"PL": 1, "PH": 2, "RGB": 3}
-    GAIN_BIAS_MAPPING = {"PL": (8.832, 1.67808), "PH": (8.758, 1.83897)}
+    SDGSAT_COEF_MAPPING = {
+        "PH": (0.00008757, 0.0000183897, 0.675),
+        "PL": (0.00008832, 0.0000167808, 0.675),
+    }
 
     @property
     def DATA_FOLDER(self) -> str:
@@ -220,8 +350,8 @@ class SDGSat(Satellite):
         self,
         gdf: gpd.GeoDataFrame,
         date_range: datetime.date | list[datetime.date],
-        variable: Literal["PL", "PH", "HDR"] = "HDR",
-    ) -> xr.Dataset | None:
+        variable: Literal["PL", "PH", "HDR"] = "PH",
+    ) -> xr.Dataset:
         """
         Extract raster data for features over a date range.
 
@@ -263,16 +393,31 @@ class SDGSat(Satellite):
         if not data_arrays:
             cls_name = self.__class__.__name__
             logger.warning(f"[{cls_name}] No images for given region and date range.")
-            return None
+            return xr.Dataset()
 
         combined = (
             xr.concat(data_arrays, dim="time", combine_attrs="drop_conflicts")
             .to_dataset(name=variable, promote_attrs=True)
             .sortby("time")
         )
-        combined = combined.rio.reproject("EPSG:4326")
 
-        return combined
+        ds = combined.rio.reproject("EPSG:4326")
+
+        # calculate radiance
+        DN = ds[variable]
+        gain, bias, bw = self.SDGSAT_COEF_MAPPING[variable]
+
+        # only apply to non-NaN and nonzero values
+        cond = (~DN.isnull()) & (DN != 0)
+        L = DN * gain + bias
+
+        ds["sdgsat_radiance"] = xr.where(cond, L * 1e5 * bw, DN)
+
+        ds = ds.drop_vars("spatial_ref").rename({variable: "sdgsat_dn"}).drop_attrs()
+        ds.attrs["crs"] = "EPSG:4326"
+        ds = ds.rio.write_crs("EPSG:4326")
+
+        return ds.rename({"y": "lat", "x": "lon"}).squeeze("time", drop=True)
 
 
 class Landsat:

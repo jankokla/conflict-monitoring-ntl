@@ -11,6 +11,7 @@ nav:
       - Site Selection: notebooks/site_selection.ipynb
       - Study Areas: notebooks/study_areas.ipynb
       - Data Analysis: notebooks/data_analysis.ipynb
+      - Precision-Recall: notebooks/precision_recall.ipynb
   - System Design:
       - SDK: system_design/sdk.md
 
@@ -44,6 +45,10 @@ plugins:
       remove_tag_config:
         remove_input_tags:
           - hide_code
+        remove_all_outputs_tags:
+          - hide_output
+      highlight_extra_classes: "custom-css-class"
+      include_source: True
   - panzoom
   - d2
   - mkdocstrings:

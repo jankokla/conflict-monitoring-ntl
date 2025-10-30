@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
 
+from conflict_monitoring_ntl.utils import binarize_xarray
+
 
 def plot_xarray_time_comparison(ds: xr.Dataset, band_name: str, cmap: str = "inferno"):
     """
@@ -115,26 +117,6 @@ def plot_map_with_shape(
     return m
 
 
-def plot_layer_comparison(xds: xr.Dataset):
-    # TODO: add docstring
-    _, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
-
-    xds["sdgsat_radiance"].plot(ax=ax1, cmap="inferno", robust=True)
-    ax1.set_title("SDGSAT")
-    ax1.axis("off")
-
-    xds["black_marble"].plot(ax=ax2, cmap="inferno", robust=True, vmin=0, vmax=1.5)
-    ax2.set_title("BlackMarble VIIRS")
-    ax2.axis("off")
-
-    xds["population_count"].plot(ax=ax3, cmap="coolwarm", center=0, robust=True, vmin=0)
-    ax3.set_title("Population Count")
-    ax3.axis("off")
-
-    plt.tight_layout()
-    plt.show()
-
-
 def plot_admin_map_with_tiles(
     country_gdf: gpd.GeoDataFrame,
     raster_gdf: gpd.GeoDataFrame,
@@ -172,3 +154,59 @@ def plot_admin_map_with_tiles(
     ).add_to(m)
 
     return m
+
+
+def plot_binary(arr: xr.DataArray, satellite: str, threshold: float):
+    """Helper function for plotting binarized tiles."""
+    arr_binary = binarize_xarray(arr, threshold)
+
+    return arr_binary.hvplot.image(
+        x="lon",
+        y="lat",
+        geo=True,
+        crs=arr.rio.crs,
+        cmap="inferno",
+        clim=(0, 1),
+        title=f"{satellite} Binarized",
+        colorbar=False,
+    )
+
+
+def plot_tile_comparison(
+    arr_left,
+    arr_right,
+    title_left="Left",
+    title_right="Right",
+    clim_left=(0, 1),
+    clim_right=(0, 1),
+    cmap_left="inferno",
+    cmap_right="inferno",
+    colorbar=True,
+    extra_plot_kwargs={},
+):
+    import hvplot.xarray
+
+    left_plot = arr_left.hvplot.image(
+        x="lon",
+        y="lat",
+        crs=arr_left.rio.crs,
+        clim=clim_left,
+        cmap=cmap_left,
+        title=title_left,
+        geo=True,
+        colorbar=colorbar,
+        **extra_plot_kwargs,
+    )
+    right_plot = arr_right.hvplot.image(
+        x="lon",
+        y="lat",
+        crs=arr_right.rio.crs,
+        clim=clim_right,
+        cmap=cmap_right,
+        title=title_right,
+        geo=True,
+        colorbar=colorbar,
+        **extra_plot_kwargs,
+    )
+
+    return left_plot + right_plot
