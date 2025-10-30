@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://dummy.org/</loc>
+         <lastmod>2025-10-30</lastmod>
+    </url>
+    <url>
+         <loc>https://dummy.org/analysis/ideation/</loc>
+         <lastmod>2025-10-30</lastmod>
+    </url>
+    <url>
+         <loc>https://dummy.org/analysis/satellites/</loc>
+         <lastmod>2025-10-30</lastmod>
+    </url>
+    <url>
+         <loc>https://dummy.org/notebooks/data_analysis/</loc>
+         <lastmod>2025-10-30</lastmod>
+    </url>
+    <url>
+         <loc>https://dummy.org/notebooks/precision_recall/</loc>
+         <lastmod>2025-10-30</lastmod>
+    </url>
+    <url>
+         <loc>https://dummy.org/notebooks/site_selection/</loc>
+         <lastmod>2025-10-30</lastmod>
+    </url>
+    <url>
+         <loc>https://dummy.org/notebooks/study_areas/</loc>
+         <lastmod>2025-10-30</lastmod>
+    </url>
+    <url>
+         <loc>https://dummy.org/system_design/sdk/</loc>
+         <lastmod>2025-10-30</lastmod>
+    </url>
+</urlset>
