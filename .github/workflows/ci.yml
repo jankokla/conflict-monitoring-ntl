@@ -25,5 +25,5 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: curl -fsSL https://d2lang.com/install.sh | sh -s --
-      - run: pip install mkdocs-material>=9.6.19 mkdocs-d2-plugin>=1.6.0 mkdocs-jupyter>=0.25.1 mkdocs-panzoom-plugin>=0.4.2 mkdocstrings[python]>=0.30.0
+      - run: pip install mkdocs-material>=9.6.19 mkdocs-d2-plugin>=1.6.0 mkdocs-jupyter>=0.25.1 mkdocs-panzoom-plugin>=0.4.2 mkdocstrings[python]>=0.30.0 mkdocs-macros-plugin>=1.4.1
       - run: mkdocs gh-deploy --force

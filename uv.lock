@@ -635,7 +635,6 @@ dependencies = [
     { name = "leafmap" },
     { name = "mapclassify" },
     { name = "matplotlib" },
-    { name = "mkdocs-macros-plugin" },
     { name = "osmnx" },
     { name = "pandas" },
     { name = "pygadm" },
@@ -652,6 +651,7 @@ dev = [
 docs = [
     { name = "mkdocs-d2-plugin" },
     { name = "mkdocs-jupyter" },
+    { name = "mkdocs-macros-plugin" },
     { name = "mkdocs-material" },
     { name = "mkdocs-panzoom-plugin" },
     { name = "mkdocstrings", extra = ["python"] },
@@ -673,7 +673,6 @@ requires-dist = [
     { name = "leafmap", specifier = ">=0.53.4" },
     { name = "mapclassify", specifier = ">=2.10.0" },
     { name = "matplotlib", specifier = ">=3.10.6" },
-    { name = "mkdocs-macros-plugin", specifier = ">=1.4.1" },
     { name = "osmnx", specifier = ">=2.0.6" },
     { name = "pandas", specifier = ">=2.3.2" },
     { name = "pygadm", specifier = ">=0.5.3" },
@@ -688,6 +687,7 @@ dev = [{ name = "jupyter", specifier = ">=1.1.1" }]
 docs = [
     { name = "mkdocs-d2-plugin", specifier = ">=1.6.0" },
     { name = "mkdocs-jupyter", specifier = ">=0.25.1" },
+    { name = "mkdocs-macros-plugin", specifier = ">=1.4.1" },
     { name = "mkdocs-material", specifier = ">=9.6.19" },
     { name = "mkdocs-panzoom-plugin", specifier = ">=0.4.2" },
     { name = "mkdocstrings", extras = ["python"], specifier = ">=0.30.0" },
