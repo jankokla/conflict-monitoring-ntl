@@ -82,8 +82,9 @@ def reproject_gdf(
 def get_gdf_for_admin(admin_id: str, content_level: int = 2) -> gpd.GeoDataFrame:
     # TODO: add docstring
     county_gdf = Items(admin=admin_id, content_level=content_level)  # type: ignore
-    county_gdf.set_crs("EPSG:4326", inplace=True)
-    return county_gdf
+    new_gdf = gpd.GeoDataFrame(geometry=county_gdf.geometry)
+    new_gdf.set_crs("EPSG:4326", inplace=True)
+    return new_gdf
 
 
 def get_ee_for_admin(admin_id: str, content_level: int = 2) -> FeatureCollection:

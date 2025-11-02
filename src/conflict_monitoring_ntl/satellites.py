@@ -17,6 +17,7 @@ import rasterio
 import requests
 import rioxarray
 import xarray as xr
+from blackmarble import BlackMarble
 from ee.featurecollection import FeatureCollection
 from ee.image import Image
 from pydantic import ConfigDict, validate_call
@@ -174,7 +175,7 @@ class GHSLPopulation(BaseRaster):
         ds = ds.rename({"x": "lon", "y": "lat", variable: "ghsl_population"})
         ds.attrs["crs"] = "EPSG:4326"
 
-        return ds.drop_vars("spatial_ref").squeeze("time", drop=True)
+        return ds.squeeze("time", drop=True)
 
 
 class GHSLSurface(BaseRaster):
@@ -213,10 +214,10 @@ class GHSLSurface(BaseRaster):
         ds = ds.rename({"x": "lon", "y": "lat", variable: "ghsl_surface"})
         ds.attrs["crs"] = "EPSG:4326"
 
-        return ds.drop_vars("spatial_ref").squeeze("time", drop=True)
+        return ds.squeeze("time", drop=True)
 
 
-class BlackMarble(BaseRaster):
+class BlackMarbleEE(BaseRaster):
 
     PRODUCT_BASE = "NASA/VIIRS/002/VNP46A2"
 
@@ -246,6 +247,66 @@ class BlackMarble(BaseRaster):
 
         ds = self._get_layer_from_ee(product, ee_clip)
         ds = ds[[variable]].rename({variable: "black_marble_radiance"})
+
+        return ds.squeeze("time", drop=True)
+
+
+class BlackMarblePy(BaseRaster):
+
+    FREQUENCY_TO_VARIABLE = {
+        "daily": "Gap_Filled_DNB_BRDF-Corrected_NTL",
+        "monthly": "NearNadir_Composite_Snow_Free",
+        "annual": "NearNadir_Composite_Snow_Free",
+    }
+
+    FREQUENCY_TO_PRODUCT = {
+        "daily": "VNP46A2",
+        "monthly": "VNP46A3",
+        "annual": "VNP46A4",
+    }
+
+    def __init__(
+        self, frequency: Literal["daily", "monthly", "annual"] = "daily"
+    ) -> None:
+        super().__init__()
+        self.frequency = frequency
+
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+    def raster(
+        self,
+        gdf: gpd.GeoDataFrame,
+        date_range: datetime.date | list[datetime.date],
+        variable: str = "Gap_Filled_DNB_BRDF_Corrected_NTL",
+    ) -> xr.Dataset:
+
+        variable = self.FREQUENCY_TO_VARIABLE[self.frequency]
+
+        if isinstance(date_range, list):
+            assert len(date_range) == 1
+            date_range = date_range[0]
+
+        output_dir = Path(__file__).parents[2] / "data" / "black_marble"
+        bm = BlackMarble(
+            output_directory=output_dir,
+            drop_values_by_quality_flag=[],
+        )
+
+        ds = bm.raster(
+            gdf,
+            product_id=self.FREQUENCY_TO_PRODUCT[self.frequency],  # type: ignore
+            date_range=date_range,
+        ).drop_attrs()
+
+        ds.attrs["crs"] = "EPSG:4326"
+        ds = ds.rio.write_crs("EPSG:4326")
+
+        ds = ds[[variable]].rename(
+            {
+                variable: f"black_marble_radiance_{self.frequency}",
+                "x": "lon",
+                "y": "lat",
+            }
+        )
 
         return ds.squeeze("time", drop=True)
 
