@@ -24,8 +24,9 @@ dependencies = [
     "hvplot>=0.12.1",
     "osmnx>=2.0.6",
     "pygadm>=0.5.3",
-    "blackmarblepy>=2025.6.3",
+    "blackmarblepy==2025.11.1",
     "h5netcdf>=1.7.3",
+    "bottleneck>=1.6.0",
 ]
 
 [dependency-groups]

@@ -266,10 +266,18 @@ class BlackMarblePy(BaseRaster):
     }
 
     def __init__(
-        self, frequency: Literal["daily", "monthly", "annual"] = "daily"
+        self,
+        frequency: Literal["daily", "monthly", "annual"] = "daily",
+        drop_values_by_quality_flag: list[int] = [],
     ) -> None:
         super().__init__()
         self.frequency = frequency
+
+        output_dir = Path(__file__).parents[2] / "data" / "black_marble"
+        self.bm = BlackMarble(
+            output_directory=output_dir,
+            drop_values_by_quality_flag=drop_values_by_quality_flag,
+        )
 
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     def raster(
@@ -281,20 +289,14 @@ class BlackMarblePy(BaseRaster):
 
         variable = self.FREQUENCY_TO_VARIABLE[self.frequency]
 
-        if isinstance(date_range, list):
-            assert len(date_range) == 1
-            date_range = date_range[0]
+        if not isinstance(date_range, list):
+            date_range = [date_range]
 
-        output_dir = Path(__file__).parents[2] / "data" / "black_marble"
-        bm = BlackMarble(
-            output_directory=output_dir,
-            drop_values_by_quality_flag=[],
-        )
-
-        ds = bm.raster(
+        ds = self.bm.raster(
             gdf,
             product_id=self.FREQUENCY_TO_PRODUCT[self.frequency],  # type: ignore
             date_range=date_range,
+            variable=variable,
         ).drop_attrs()
 
         ds.attrs["crs"] = "EPSG:4326"
@@ -308,7 +310,10 @@ class BlackMarblePy(BaseRaster):
             }
         )
 
-        return ds.squeeze("time", drop=True)
+        if ds.sizes["time"] == 1:
+            return ds.squeeze("time", drop=True)
+
+        return ds
 
 
 class EnMAP(BaseRaster):
