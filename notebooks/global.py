@@ -3,7 +3,7 @@
 
 # ## Countries
 
-# In[ ]:
+# In[14]:
 
 
 import pygadm
@@ -21,7 +21,7 @@ import os
 
 
 checkpoint_path = "../results/country_confustion_matrix.parquet"
-removed = ["AUS", "BRA", "CAN", "USA", "RUS", "GRL", "MEX", "CHL"]
+removed = ["AUS", "BRA", "CAN", "USA", "RUS", "GRL", "MEX", "CHL", "IDN"]
 
 if os.path.exists(checkpoint_path):
     df = pd.read_parquet(checkpoint_path)
@@ -33,7 +33,19 @@ else:
 completed.update(removed)
 
 
-# In[10]:
+# In[29]:
+
+
+df
+
+
+# In[31]:
+
+
+list(pycountry.countries)
+
+
+# In[26]:
 
 
 error_path = "../results/country_errors.parquet"
@@ -44,6 +56,12 @@ if os.path.exists(error_path):
     completed.update(error)
 else:
     error_df = pd.DataFrame(columns=["country", "gid", "error"])
+
+
+# In[27]:
+
+
+error_df
 
 
 # In[ ]:
@@ -75,11 +93,12 @@ with tqdm(pycountry.countries, desc="Calculating confusion matrix:") as pbar:
             continue
 
         try:
-            
+
             gdf = pygadm.Items(admin=gid, content_level=1)
-        
+
             pixels = 0
             conf_mat = np.zeros(4, dtype=np.int64)
+
 
             for i in tqdm(range(len(gdf)), desc="Processing Provinces"):
 
@@ -116,4 +135,10 @@ with tqdm(pycountry.countries, desc="Calculating confusion matrix:") as pbar:
             data = [country, gid, str(e)]
             error_df = pd.concat([pd.DataFrame([data], columns=error_df.columns), error_df], ignore_index=True)
             error_df.to_parquet(error_path)
+
+
+# In[ ]:
+
+
+
 
