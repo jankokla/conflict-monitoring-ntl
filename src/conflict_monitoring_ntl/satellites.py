@@ -277,7 +277,6 @@ class BlackMarblePy(BaseRaster):
         self.bm = BlackMarble(
             output_directory=output_dir,
             drop_values_by_quality_flag=drop_values_by_quality_flag,
-            bearer="eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6Imprb2tsYSIsImV4cCI6MTc2NTIwOTU2NCwiaWF0IjoxNzYwMDI1NTY0LCJpc3MiOiJodHRwczovL3Vycy5lYXJ0aGRhdGEubmFzYS5nb3YiLCJpZGVudGl0eV9wcm92aWRlciI6ImVkbF9vcHMiLCJhY3IiOiJlZGwiLCJhc3N1cmFuY2VfbGV2ZWwiOjN9.r-dcHlkWmbHt_nkxtLcLQeCvH8KH1-QLLR8SgJOH-qugdn4FxFFRpq6bu3mmrMhbu5RkTBSB1pusBxlDVNdUHUAc05Dsoc-kO6ySXi-j-JoL5GFiNYvOD-uDKH7W3ifqKC5KNRl6asp31GJmh17uXM9PbEIMc4hxxdJZ-4wvpL-c_e0I6hQ5rbozAgbLdL_uV12baqra5hTF67meuCkCtI_40Golpwi0CV1WjaxD8T01aldvkitN1t6sR4s2nT6gb1Rq__NbZeef-Lys2RlwB2LJjBJ4kuxRbOsi3i3CX_7G0Lta5Phby7saB8QUGJa_kXmviU8mCtZSZB7-NLwDJA"
         )
 
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
