@@ -1,8 +1,10 @@
 # Project related
 .vscode/
-data/
+data/*
 notebooks/cache
 docs/notebooks/cache
+
+!data/human_development_index.csv
 
 # OS generated files #
 ######################
