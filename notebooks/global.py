@@ -111,7 +111,7 @@ with tqdm(pycountry.countries, desc="Calculating confusion matrix:") as pbar:
                 mask = get_combined_mask(ds)
                 ds = ds.where(mask)
 
-                ghsl_pop_binary = binarize_xarray(ds.ghsl_surface, 2500)
+                ghsl_pop_binary = binarize_xarray(ds.ghsl_surface, 50000)
                 y_true = get_non_nan_flat_array(ghsl_pop_binary)
 
                 bm_binary = binarize_xarray(ds.black_marble_radiance_monthly, 1.0)
