@@ -1,26 +1,26 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# ## Countries
-
-# In[14]:
-
-
-import pygadm
-import pandas as pd
-import geopandas as gpd
-from tqdm import tqdm
-from pathlib import Path
-import pycountry
+import datetime
 import os
+import shutil
+from pathlib import Path
 
+import geopandas as gpd
+import numpy as np
+import pandas as pd
+import pycountry
+import pygadm
+from rasterio.enums import Resampling
+from sklearn.metrics import confusion_matrix
+from tqdm import tqdm
 
-# ## Rasters
+from conflict_monitoring_ntl.satellites import BlackMarblePy, GHSLSurface
+from conflict_monitoring_ntl.transform import RasterPipeline
+from conflict_monitoring_ntl.utils import (
+    binarize_xarray,
+    get_combined_mask,
+    get_non_nan_flat_array,
+)
 
-# In[ ]:
-
-
-checkpoint_path = "../results/country_confustion_matrix.parquet"
+checkpoint_path = "../results/country_confusion_matrix.parquet"
 removed = ["AUS", "BRA", "CAN", "USA", "RUS", "GRL", "MEX", "CHL", "IDN"]
 
 if os.path.exists(checkpoint_path):
@@ -33,21 +33,6 @@ else:
 completed.update(removed)
 
 
-# In[29]:
-
-
-df
-
-
-# In[31]:
-
-
-list(pycountry.countries)
-
-
-# In[26]:
-
-
 error_path = "../results/country_errors.parquet"
 
 if os.path.exists(error_path):
@@ -56,25 +41,6 @@ if os.path.exists(error_path):
     completed.update(error)
 else:
     error_df = pd.DataFrame(columns=["country", "gid", "error"])
-
-
-# In[27]:
-
-
-error_df
-
-
-# In[ ]:
-
-
-import shutil
-import numpy as np
-from conflict_monitoring_ntl.satellites import BlackMarblePy, GHSLSurface
-from conflict_monitoring_ntl.transform import RasterPipeline
-from conflict_monitoring_ntl.utils import binarize_xarray, get_combined_mask, get_non_nan_flat_array
-from rasterio.enums import Resampling
-import datetime
-from sklearn.metrics import confusion_matrix
 
 rasters = [GHSLSurface(), BlackMarblePy(frequency="monthly")]
 transformations = [{"reproject_match": {"resampling": Resampling.sum}}, {}]
@@ -119,7 +85,7 @@ with tqdm(pycountry.countries, desc="Calculating confusion matrix:") as pbar:
 
                 assert y_pred.shape == y_true.shape
 
-                conf_mat += confusion_matrix(y_true, y_pred).flatten()
+                conf_mat += confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
                 pixels += mask.sum().item()
 
             data = [country, gid, pixels, *conf_mat.tolist()]
@@ -135,10 +101,3 @@ with tqdm(pycountry.countries, desc="Calculating confusion matrix:") as pbar:
             data = [country, gid, str(e)]
             error_df = pd.concat([pd.DataFrame([data], columns=error_df.columns), error_df], ignore_index=True)
             error_df.to_parquet(error_path)
-
-
-# In[ ]:
-
-
-
-
