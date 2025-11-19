@@ -5,6 +5,8 @@ import geemap
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import pycountry_convert as pc
+import pycountry
 import pyproj
 import rasterio
 import xarray as xr
@@ -115,3 +117,14 @@ def get_precision_recall(
         )
 
     return pd.DataFrame(results)
+
+
+def country_to_continent(alpha3):
+    try:
+        country = pycountry.countries.get(alpha_3=alpha3)
+        assert isinstance(country, pycountry.db.Country)
+        continent_code = pc.country_alpha2_to_continent_code(country.alpha_2)
+        continent_name = pc.convert_continent_code_to_continent_name(continent_code)
+        return continent_name
+    except KeyError:
+        pass
