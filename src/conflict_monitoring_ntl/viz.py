@@ -257,7 +257,7 @@ def plot_lighted_country_comparison_by_urbanisation(
             ncol=len(patches),
             frameon=False,
         )
-        plt.tight_layout(rect=[0, 0, 1, 0.93])
+        plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.93))
 
 
 def plot_lighted_proportion_comparison_by_urbanisation(
@@ -293,15 +293,19 @@ def plot_lighted_proportion_comparison_by_urbanisation(
             ncol=len(patches),
             frameon=False,
         )
-        plt.tight_layout(rect=[0, 0, 1, 0.93])
+        plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.93))
 
 
-def plot_world_coverage(country_codes: list[str]):
+def plot_world_coverage(country_codes: list[str], country_names: list[str]):
     from matplotlib.colors import ListedColormap
 
     world = gpd.read_file("https://datahub.io/core/geo-countries/r/countries.geojson")
-    world["is_good"] = world["ISO3166-1-Alpha-3"].isin(country_codes)
-    cmap = ListedColormap(["#bdbdbd", "#377eb8"])  # e.g.: red, blue
+
+    country_mask = world["name"].isin(country_names)
+    code_mask = world["ISO3166-1-Alpha-3"].isin(country_codes)
+    world["is_good"] = country_mask | code_mask
+
+    cmap = ListedColormap(["#bdbdbd", "#377eb8"])
 
     _ = world.plot(
         column="is_good",
