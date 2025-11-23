@@ -36,6 +36,12 @@ warnings.filterwarnings(
     module="urllib3.connectionpool",
 )
 
+try:
+    ee.Initialize(project="ee-jankokla-ntl")
+except ee.ee_exception.EEException:
+    ee.Authenticate()
+    ee.Initialize(project="ee-jankokla-ntl")
+
 
 class BaseRaster(ABC):
 
@@ -112,7 +118,10 @@ class BaseRaster(ABC):
         pop = image.clip(clip)
 
         return geemap.ee_to_xarray(
-            pop, geometry=clip.geometry(), projection=pop.projection()
+            pop, 
+            geometry=clip.geometry(), 
+            projection=pop.projection(), 
+            ee_initialize=False
         )
 
     @staticmethod
@@ -151,12 +160,6 @@ class GHSLPopulation(BaseRaster):
         variable: str = "population_count",
     ) -> xr.Dataset | None:
 
-        try:
-            ee.Initialize()
-        except ee.ee_exception.EEException:
-            ee.Authenticate()
-            ee.Initialize()
-
         if isinstance(date_range, list):
             assert len(date_range) == 1
             date_range = date_range[0]
@@ -178,6 +181,39 @@ class GHSLPopulation(BaseRaster):
         return ds.squeeze("time", drop=True)
 
 
+class GHSLUrbanization(BaseRaster):
+
+    PRODUCT = "JRC/GHSL/P2023A/GHS_SMOD_V2-0/2020"
+
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
+    def raster(
+        self,
+        gdf: gpd.GeoDataFrame,
+        date_range: datetime.date | list[datetime.date],
+        variable: str = "smod_code",
+    ) -> xr.Dataset | None:
+
+        if isinstance(date_range, list):
+            assert len(date_range) == 1
+            date_range = date_range[0]
+
+        ee_clip = geemap.gdf_to_ee(gdf)
+        assert isinstance(ee_clip, FeatureCollection)
+
+        ds = self._get_layer_from_ee(self.PRODUCT, ee_clip)
+
+        ds = (
+            ds[[variable]]
+            .rename({"X": "x", "Y": "y"})
+            .transpose("time", "y", "x")
+            .rio.reproject("EPSG:4326")
+        )
+        ds = ds.rename({"x": "lon", "y": "lat", variable: "smod_code"})
+        ds.attrs["crs"] = "EPSG:4326"
+
+        return ds.squeeze("time", drop=True)
+
+
 class GHSLSurface(BaseRaster):
 
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -188,11 +224,7 @@ class GHSLSurface(BaseRaster):
         variable: str = "built_surface",
     ) -> xr.Dataset:
 
-        try:
-            ee.Initialize()
-        except ee.ee_exception.EEException:
-            ee.Authenticate()
-            ee.Initialize()
+        
 
         if isinstance(date_range, list):
             assert len(date_range) == 1
@@ -228,12 +260,6 @@ class BlackMarbleEE(BaseRaster):
         date_range: datetime.date | list[datetime.date],
         variable: str = "Gap_Filled_DNB_BRDF_Corrected_NTL",
     ) -> xr.Dataset:
-
-        try:
-            ee.Initialize()
-        except ee.ee_exception.EEException:
-            ee.Authenticate()
-            ee.Initialize()
 
         if isinstance(date_range, list):
             assert len(date_range) == 1
@@ -277,6 +303,7 @@ class BlackMarblePy(BaseRaster):
         self.bm = BlackMarble(
             output_directory=output_dir,
             drop_values_by_quality_flag=drop_values_by_quality_flag,
+            bearer="eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6Imprb2tsYSIsImV4cCI6MTc2Nzg4MzY1MSwiaWF0IjoxNzYyNjk5NjUxLCJpc3MiOiJodHRwczovL3Vycy5lYXJ0aGRhdGEubmFzYS5nb3YiLCJpZGVudGl0eV9wcm92aWRlciI6ImVkbF9vcHMiLCJhY3IiOiJlZGwiLCJhc3N1cmFuY2VfbGV2ZWwiOjN9.zEeDNW0Z2vh9KnRHO20ilmt49ElDr716o3hRBs2J7cUQRZ_-sfko50JobAVTM6hKVZpLZOngTFxXkonSfnA1MpNDuNIDcbt9vPqtSDWTHr3ODHj5hBUcryRFFpQxOFtJ2o-ZhvG5JKV1l35ljC605ZISXqwp6J3jvB2CB6OusZ6FRB9zmfVRdcCMMjLz6yncSiJWC3StmcCY1XlBvQVbT2xchhZ_vS6pg6dhS7g88jBFOKFu8fiIHWfe53tKd46wM3DLapwZ9yEK86pzzck06NP29Q7iithtSU6EDP_waHpUbt7vmQMzUq9loOyT1NEym1ac351HoeZoJGr413EbZQ"
         )
 
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
