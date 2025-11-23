@@ -12,7 +12,8 @@ nav:
       - Data Analysis: notebooks/data_analysis.ipynb
       - Precision-Recall: notebooks/precision_recall.ipynb
   - Results:
-      - Global Overlap: notebooks/global_overlap.ipynb
+      - Global Overlap: notebooks/bm_ghsl_match.ipynb
+      - Urbanisation Level: notebooks/bm_ghsl_smod.ipynb
   - System Design:
       - SDK: system_design/sdk.md
   - Progress Updates:

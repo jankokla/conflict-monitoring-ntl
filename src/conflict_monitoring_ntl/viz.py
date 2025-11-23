@@ -8,6 +8,10 @@ import pandas as pd
 import pycountry
 import seaborn as sns
 import xarray as xr
+from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.palettes import Set2
+from bokeh.plotting import figure, show
+from bokeh.transform import factor_cmap
 from matplotlib.patches import Patch
 
 from conflict_monitoring_ntl.config import PALETTE, SMOD_CLASS_ORDER
@@ -410,4 +414,65 @@ def plot_scatter(
                 )
 
         plt.tight_layout()
+        plt.show()
+
+
+def plot_scatter_bokeh(df: pd.DataFrame, y: str = "f1", legend_loc: str = "top_left"):
+    continents = df["continent"].unique().tolist()
+    palette = Set2[max(3, len(continents))]
+
+    source = ColumnDataSource.from_df(df)
+
+    fig = figure(x_axis_label="Human Development Index", y_axis_label=y, width=880)
+    fig.scatter(
+        x="hdi",
+        y=y,
+        source=source,
+        alpha=0.8,
+        color=factor_cmap("continent", palette=palette, factors=continents),
+        legend_field="continent",
+        size="size",
+    )
+
+    hover = HoverTool(
+        tooltips=[
+            ("Country", "@country"),
+            ("F1", "@f1"),
+            ("precision", "@precision"),
+            ("recall", "@recall"),
+            ("Pixel Count", "@pixel_count"),
+        ]
+    )
+
+    fig.legend.location = legend_loc  # type: ignore
+
+    fig.add_tools(hover)
+    show(fig)
+
+
+def plot_regression_radiance_by_country(df):
+    with sns.axes_style("whitegrid", {"grid.color": ".9", "grid.linestyle": ":"}):
+        ax = sns.regplot(
+            x="hdi_2020",
+            y="black_marble_radiance_monthly",
+            data=df,
+            color="#366785",
+        )
+
+        ax.set_xlabel("Human Development Index (2020)", labelpad=20)
+        ax.set_ylabel(
+            "Mean Monthly Nighttime Radiance (nW/cm$^2$/sr) - (Jan 2020)", labelpad=20
+        )
+
+        for _, row in df.iterrows():
+            if row.black_marble_radiance_monthly > 0.3:
+                ax.annotate(
+                    row["country_code"],
+                    (row["hdi_2020"], row["black_marble_radiance_monthly"]),
+                    xytext=(5, 5),
+                    textcoords="offset points",
+                    arrowprops=dict(arrowstyle="->", lw=0.5, color="black"),
+                    fontsize=9,
+                )
+
         plt.show()
