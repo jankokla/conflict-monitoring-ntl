@@ -450,13 +450,14 @@ def plot_scatter_bokeh(df: pd.DataFrame, y: str = "f1", legend_loc: str = "top_l
     show(fig)
 
 
-def plot_regression_radiance_by_country(df):
+def plot_regression_radiance_by_country(df: pd.DataFrame, color: str):
+    plt.figure(figsize=(12, 8))
     with sns.axes_style("whitegrid", {"grid.color": ".9", "grid.linestyle": ":"}):
         ax = sns.regplot(
             x="hdi_2020",
             y="black_marble_radiance_monthly",
             data=df,
-            color="#366785",
+            color=color,
         )
 
         ax.set_xlabel("Human Development Index (2020)", labelpad=20)
