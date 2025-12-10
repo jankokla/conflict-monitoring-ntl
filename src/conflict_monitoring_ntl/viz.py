@@ -368,8 +368,11 @@ def plot_radiance_boxenplots(
 def plot_scatter(
     df: pd.DataFrame,
     countries_to_plot: list[str],
+    x: str = "hdi",
     y: str = "f1",
-    figsize: tuple = (12, 8),
+    xlabel: str = "Human Development Index",
+    ylabel: str = "f1",
+    figsize: tuple = (12, 7),
     legend_loc: str = "upper left",
 ):
     df["is_plotted"] = False
@@ -379,7 +382,7 @@ def plot_scatter(
     with sns.axes_style("whitegrid", {"grid.color": ".9", "grid.linestyle": ":"}):
         ax = sns.scatterplot(
             data=df,
-            x="hdi",
+            x=x,
             y=y,
             hue="continent",
             palette=PALETTE,
@@ -389,8 +392,8 @@ def plot_scatter(
         )
 
         # Axis labels
-        ax.set_xlabel("Human Development Index", labelpad=20)
-        ax.set_ylabel("F1", labelpad=20)
+        ax.set_xlabel(xlabel, fontsize=13, labelpad=20)
+        ax.set_ylabel(ylabel, fontsize=13, labelpad=20)
 
         leg = ax.get_legend()
         if leg:
@@ -404,32 +407,41 @@ def plot_scatter(
             title="Continent",
             loc=legend_loc,
             frameon=False,
+            fontsize=12,
+            title_fontsize=13,
         )
 
         for i, row in df.iterrows():
             if row.is_plotted:
                 ax.annotate(
                     row["country"],
-                    (row["hdi"], row["f1"]),
+                    (row[x], row[y]),
                     xytext=(5, 5),
                     textcoords="offset points",
                     arrowprops=dict(arrowstyle="->", lw=0.5, color="black"),
-                    fontsize=9,
+                    fontsize=10,
                 )
 
         plt.tight_layout()
         plt.show()
 
 
-def plot_scatter_bokeh(df: pd.DataFrame, y: str = "f1", legend_loc: str = "top_left"):
+def plot_scatter_bokeh(
+    df: pd.DataFrame,
+    x: str = "hdi",
+    y: str = "f1",
+    xlabel: str = "Human Development Index",
+    ylabel: str = "f1",
+    legend_loc: str = "top_left",
+):
     continents = df["continent"].unique().tolist()
     palette = Set2[max(3, len(continents))]
 
     source = ColumnDataSource.from_df(df)
 
-    fig = figure(x_axis_label="Human Development Index", y_axis_label=y, width=880)
+    fig = figure(x_axis_label=xlabel, y_axis_label=ylabel, width=880)
     fig.scatter(
-        x="hdi",
+        x=x,
         y=y,
         source=source,
         alpha=0.8,
