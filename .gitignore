@@ -4,7 +4,8 @@ data/*
 notebooks/cache
 docs/notebooks/cache
 results/urbanization/
-results/urbanization_admin_2/
+results/urbanization_sept/
+results/urbanization_jan/
 
 !data/human_development_index.csv
 

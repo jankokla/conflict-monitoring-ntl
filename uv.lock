@@ -290,7 +290,7 @@ wheels = [
 
 [[package]]
 name = "blackmarblepy"
-version = "2025.11.1"
+version = "2025.11.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -311,9 +311,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "xarray" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1a/f2/033bb8551d9865db0abab297bbdd2108c2bdfd1dc8f7c08d7ec86060b22c/blackmarblepy-2025.11.1.tar.gz", hash = "sha256:edc5dede8951b65741567c99b64ffeb557e39d0783193087226ff2cffa1679db", size = 11468020, upload-time = "2025-11-02T14:32:52.771Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a8/9b/5fa4d5902465d52998e3d94e5a76b73c0ff04e702d5cdc5ae3ef106645e4/blackmarblepy-2025.11.2.tar.gz", hash = "sha256:042d53c6f883b7d2077cf8a91c308aa1fc568e6f7e0c140d1649c001afe248c3", size = 11468436, upload-time = "2025-11-13T23:23:47.155Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/43/b6/b97f7ebd26651a43e8c235d0eeecd636e08d33057d72d1b98c32defd5100/blackmarblepy-2025.11.1-py3-none-any.whl", hash = "sha256:d8c108cf64175c5ef64f658bd8f80da78946931c32e0b9c9a1ad23b57d00f62a", size = 41715, upload-time = "2025-11-02T14:32:50.346Z" },
+    { url = "https://files.pythonhosted.org/packages/6c/54/6d90acab151395844b2bbeaf089dac4c421e1ccc6144aef1d1cc1b36f0b4/blackmarblepy-2025.11.2-py3-none-any.whl", hash = "sha256:7771e5e4248d195ff6ad034632c3f30ef617c7d343b7e344217f1178f0e10a6f", size = 41551, upload-time = "2025-11-13T23:23:45.084Z" },
 ]
 
 [[package]]
@@ -672,6 +672,7 @@ dependencies = [
     { name = "bokeh" },
     { name = "bottleneck" },
     { name = "colorcet" },
+    { name = "dask-geopandas" },
     { name = "datashader" },
     { name = "fiona" },
     { name = "folium" },
@@ -712,10 +713,11 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "blackmarblepy", specifier = "==2025.11.1" },
+    { name = "blackmarblepy", specifier = "==2025.11.2" },
     { name = "bokeh", specifier = ">=3.8.0" },
     { name = "bottleneck", specifier = ">=1.6.0" },
     { name = "colorcet", specifier = ">=3.1.0" },
+    { name = "dask-geopandas", specifier = ">=0.5.0" },
     { name = "datashader", specifier = ">=0.18.2" },
     { name = "fiona", specifier = "==1.10.1" },
     { name = "folium", specifier = ">=0.20.0" },
@@ -928,6 +930,26 @@ complete = [
     { name = "numpy" },
     { name = "pandas" },
     { name = "pyarrow" },
+]
+dataframe = [
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "pyarrow" },
+]
+
+[[package]]
+name = "dask-geopandas"
+version = "0.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "dask", extra = ["dataframe"] },
+    { name = "geopandas" },
+    { name = "packaging" },
+    { name = "shapely" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a6/da/ea20602a97db7bc1c4322eaf5c14b209cac9829782f17680a2c590d8f838/dask_geopandas-0.5.0.tar.gz", hash = "sha256:b1fc2a041550d609b87db9fcfad2e8217f7336e3436415da11ba9dc8437272b1", size = 63726, upload-time = "2025-06-02T20:49:19.762Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/df/41/ea5282553f26f387a95d6c46a9d0921f53a4a09f6bb0df1bc8edaa63d557/dask_geopandas-0.5.0-py3-none-any.whl", hash = "sha256:0b6c2a8f7fae94667c4af539e591fa7fb59c5c3206188fa51e461d395ef80240", size = 55067, upload-time = "2025-06-02T20:49:18.729Z" },
 ]
 
 [[package]]
