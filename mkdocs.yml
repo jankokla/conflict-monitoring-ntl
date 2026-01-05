@@ -4,18 +4,14 @@ extra_css:
   - stylesheets/extra.css
 
 nav:
-  - Background:
+  - NTL Products:
       - Satellites: analysis/satellites.md
-      - Ideation: analysis/ideation.md
   - Preprocessing:
-      - Study Areas: notebooks/study_areas.ipynb
       - Data Analysis: notebooks/data_analysis.ipynb
       - Precision-Recall: notebooks/precision_recall.ipynb
-  - Results:
+  - Regional Robustness:
       - Global Overlap: notebooks/bm_ghsl_match.ipynb
       - Urbanisation Level: notebooks/bm_ghsl_smod.ipynb
-  - System Design:
-      - SDK: system_design/sdk.md
   - Progress Updates:
       - November: notebooks/progress_update.ipynb
 
@@ -55,6 +51,8 @@ plugins:
       include_source: True
   - panzoom
   - d2
+  - bibtex:
+      bib_file: "docs/refs.bib"
   - mkdocstrings:
       handlers:
         python:
