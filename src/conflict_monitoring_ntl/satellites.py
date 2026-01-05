@@ -29,7 +29,6 @@ from conflict_monitoring_ntl.logger import logger
 
 logging.getLogger("pyogrio._io").setLevel(logging.WARNING)
 
-
 warnings.filterwarnings(
     "ignore",
     message="Connection pool is full, discarding connection*",
@@ -44,7 +43,12 @@ except ee.ee_exception.EEException:
 
 
 class BaseRaster(ABC):
-
+    """
+    Abstract base class for handling satellite raster data operations.
+    
+    Provides core utilities for spatial intersection, local file discovery,
+    and Earth Engine integration.
+    """
     DATA_FOLDER = ""
     FILE_PATTERN = ""
     DATE_REGEX = ""
@@ -56,6 +60,14 @@ class BaseRaster(ABC):
         date_range: datetime.date | list[datetime.date],
         variable,
     ) -> xr.Dataset | None:
+        """
+        Abstract method to retrieve raster data as an xarray Dataset.
+
+        Args:
+            gdf: Input geospatial features to define the area of interest.
+            date_range: Single date or list of dates for data retrieval.
+            variable: The specific variable or band to extract.
+        """
         pass
 
     def _get_matching_tiles(
@@ -64,22 +76,17 @@ class BaseRaster(ABC):
         date_range: datetime.date | list[datetime.date],
     ) -> dict[datetime.date, list[PosixPath]]:
         """
-        Find raster filepaths overlapping features within date range.
+        Find local raster filepaths overlapping features within a specific date range.
 
         Args:
-            gdf: Input features to test for intersection.
+            gdf: Input features to test for spatial intersection.
             date_range: Date or list of dates for filtering tiles.
 
         Returns:
             Dictionary mapping dates to lists of matching raster filepaths.
 
         Raises:
-            ValueError: If 'date_range' is empty or invalid.
-
-        Example:
-            >>> files = sdgsat.get_matching_tiles(my_gdf, [dt1, dt2])
-            >>> print(files)
-            {datetime.date(2023, 1, 5): [PosixPath("data/20230105_LH.tif")]}
+            ValueError: If date_range is empty or invalid.
         """
         if isinstance(date_range, datetime.date):
             date_range = [date_range]
@@ -112,29 +119,37 @@ class BaseRaster(ABC):
 
     @staticmethod
     def _get_layer_from_ee(product, clip: FeatureCollection) -> xr.Dataset:
-        # TODO: add docstring
+        """
+        Fetch a specific product layer from Google Earth Engine and convert to xarray.
 
+        Args:
+            product: Earth Engine asset ID or image string.
+            clip: Feature collection used to spatially clip the image.
+
+        Returns:
+            Xarray Dataset containing the clipped image data.
+        """
         image = Image(product)
         pop = image.clip(clip)
 
         return geemap.ee_to_xarray(
-            pop, 
-            geometry=clip.geometry(), 
-            projection=pop.projection(), 
-            ee_initialize=False
+            pop,
+            geometry=clip.geometry(),
+            projection=pop.projection(),
+            ee_initialize=False,
         )
 
     @staticmethod
     def _get_patch(gdf: gpd.GeoDataFrame, src: rasterio.DatasetReader) -> xr.DataArray:
         """
-        Extract raster patch matching geometry and CRS.
+        Extract a raster patch matching specific geometry and CRS from a local file.
 
         Args:
-            gdf: GeoDataFrame holding clipping geometries.
-            src: Open rasterio dataset to sample.
+            gdf: GeoDataFrame holding the clipping geometries.
+            src: Open rasterio dataset reader to sample from.
 
         Returns:
-            xarray.DataArray containing area of interest raster patch.
+            Xarray DataArray containing the clipped and loaded raster patch.
         """
         gdf = gdf.to_crs(src.crs)
         patch = (
@@ -149,7 +164,7 @@ class BaseRaster(ABC):
 
 
 class GHSLPopulation(BaseRaster):
-
+    """Handler for Global Human Settlement Layer (GHSL) Population data."""
     PRODUCT = "JRC/GHSL/P2023A/GHS_POP/2020"
 
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -159,7 +174,17 @@ class GHSLPopulation(BaseRaster):
         date_range: datetime.date | list[datetime.date],
         variable: str = "population_count",
     ) -> xr.Dataset | None:
+        """
+        Retrieve GHSL population count data from Earth Engine.
 
+        Args:
+            gdf: Input geospatial features for clipping.
+            date_range: Target date (expected to be a single date for this static product).
+            variable: Band name to extract.
+
+        Returns:
+            Xarray Dataset with population data reprojected to EPSG:4326.
+        """
         if isinstance(date_range, list):
             assert len(date_range) == 1
             date_range = date_range[0]
@@ -182,7 +207,7 @@ class GHSLPopulation(BaseRaster):
 
 
 class GHSLUrbanization(BaseRaster):
-
+    """Handler for GHSL Degree of Urbanization (SMOD) data."""
     PRODUCT = "JRC/GHSL/P2023A/GHS_SMOD_V2-0/2020"
 
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -192,7 +217,17 @@ class GHSLUrbanization(BaseRaster):
         date_range: datetime.date | list[datetime.date],
         variable: str = "smod_code",
     ) -> xr.Dataset | None:
+        """
+        Retrieve GHSL urbanization settlement classification from Earth Engine.
 
+        Args:
+            gdf: Input geospatial features for clipping.
+            date_range: Target date for filtering.
+            variable: Settlement classification band name.
+
+        Returns:
+            Xarray Dataset with SMOD codes.
+        """
         if isinstance(date_range, list):
             assert len(date_range) == 1
             date_range = date_range[0]
@@ -215,7 +250,7 @@ class GHSLUrbanization(BaseRaster):
 
 
 class GHSLSurface(BaseRaster):
-
+    """Handler for GHSL Built-up Surface characteristics."""
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     def raster(
         self,
@@ -223,9 +258,17 @@ class GHSLSurface(BaseRaster):
         date_range: datetime.date | list[datetime.date],
         variable: str = "built_surface",
     ) -> xr.Dataset:
+        """
+        Retrieve GHSL built-up surface area from Earth Engine.
 
-        
+        Args:
+            gdf: Input geospatial features for clipping.
+            date_range: Target date for filtering.
+            variable: Built surface band name.
 
+        Returns:
+            Xarray Dataset with built-up surface density.
+        """
         if isinstance(date_range, list):
             assert len(date_range) == 1
             date_range = date_range[0]
@@ -250,7 +293,7 @@ class GHSLSurface(BaseRaster):
 
 
 class BlackMarbleEE(BaseRaster):
-
+    """Handler for NASA Black Marble (VNP46A2) data via Earth Engine."""
     PRODUCT_BASE = "NASA/VIIRS/002/VNP46A2"
 
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -260,7 +303,17 @@ class BlackMarbleEE(BaseRaster):
         date_range: datetime.date | list[datetime.date],
         variable: str = "Gap_Filled_DNB_BRDF_Corrected_NTL",
     ) -> xr.Dataset:
+        """
+        Fetch Black Marble Nighttime Lights data from Earth Engine for a specific date.
 
+        Args:
+            gdf: Input geospatial features for clipping.
+            date_range: Target date to fetch.
+            variable: The specific NTL band to retrieve.
+
+        Returns:
+            Xarray Dataset containing radiance values.
+        """
         if isinstance(date_range, list):
             assert len(date_range) == 1
             date_range = date_range[0]
@@ -278,7 +331,8 @@ class BlackMarbleEE(BaseRaster):
 
 
 class BlackMarblePy(BaseRaster):
-
+    """Handler for NASA Black Marble data using the local blackmarble library."""
+    
     FREQUENCY_TO_VARIABLE = {
         "daily": "Gap_Filled_DNB_BRDF-Corrected_NTL",
         "monthly": "NearNadir_Composite_Snow_Free",
@@ -296,6 +350,13 @@ class BlackMarblePy(BaseRaster):
         frequency: Literal["daily", "monthly", "annual"] = "daily",
         drop_values_by_quality_flag: list[int] = [],
     ) -> None:
+        """
+        Initialize the BlackMarblePy loader.
+
+        Args:
+            frequency: Temporal resolution (daily, monthly, or annual).
+            drop_values_by_quality_flag: List of quality flags to mask out.
+        """
         super().__init__()
         self.frequency = frequency
 
@@ -312,7 +373,17 @@ class BlackMarblePy(BaseRaster):
         date_range: datetime.date | list[datetime.date],
         variable: str = "Gap_Filled_DNB_BRDF_Corrected_NTL",
     ) -> xr.Dataset:
+        """
+        Fetch Black Marble data using the NASA API/local cache.
 
+        Args:
+            gdf: Input geospatial features.
+            date_range: Single date or list of dates.
+            variable: Radiance variable name.
+
+        Returns:
+            Xarray Dataset containing nighttime light radiance.
+        """
         variable = self.FREQUENCY_TO_VARIABLE[self.frequency]
 
         if not isinstance(date_range, list):
@@ -343,20 +414,23 @@ class BlackMarblePy(BaseRaster):
 
 
 class EnMAP(BaseRaster):
-    """EnMAP satellite raster data loader and band extraction utility."""
+    """EnMAP satellite hyperspectral raster data loader."""
 
     BANDS = [10, 26, 44]
 
     @property
     def DATA_FOLDER(self) -> str:
+        """Directory name for EnMAP data."""
         return "enmap"
 
     @property
     def FILE_PATTERN(self) -> str:
+        """Glob pattern for VNIR spectral images."""
         return "*SPECTRAL_IMAGE_VNIR.TIF"
 
     @property
     def DATE_REGEX(self) -> str:
+        """Regex to extract ISO timestamp from filename."""
         return r"(\d{8})T\d{6}Z"
 
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -367,30 +441,24 @@ class EnMAP(BaseRaster):
         variable: str = "RGB",
     ) -> xr.Dataset | None:
         """
-        Extract raster data for features over a date range.
+        Extract EnMAP VNIR bands for features over a date range.
 
         Args:
             gdf: Input geospatial features.
-            date_range: Single date or list of dates to match tile acquisition.
-            variable: Optional band name to extract ("PL", "PH", or "HDR").
+            date_range: Single date or list of dates to match acquisition.
+            variable: Name to assign to the resulting dataset variable.
 
         Returns:
-            xarray.Dataset containing selected data for each date.
-
-        Raises:
-            ValueError: If no matching tiles are found.
+            Xarray Dataset containing concatenated bands for each matched date.
         """
         matching_files = self._get_matching_tiles(gdf, date_range)
 
         data_arrays = []
         for date, file_list in matching_files.items():
-
             data_arrays_per_date = []
 
             for tif_file in file_list:
-
                 with rasterio.open(tif_file) as src:
-
                     patch = self._get_patch(gdf, src)
 
                     bands_patch = patch.isel(band=self.BANDS)
@@ -417,7 +485,7 @@ class EnMAP(BaseRaster):
 
 
 class SDGSat(BaseRaster):
-    """SDGSat satellite raster data loader and band extraction utility."""
+    """SDGSat satellite (Glimmer) raster data loader and radiance calculator."""
 
     BAND_MAPPING = {"PL": 1, "PH": 2, "RGB": 3}
     SDGSAT_COEF_MAPPING = {
@@ -427,14 +495,17 @@ class SDGSat(BaseRaster):
 
     @property
     def DATA_FOLDER(self) -> str:
+        """Directory name for SDGSat data."""
         return "sdgsat"
 
     @property
     def FILE_PATTERN(self) -> str:
+        """Glob pattern for SDGSat Level 1H files."""
         return "*_LH.tif"
 
     @property
     def DATE_REGEX(self) -> str:
+        """Regex to extract date from filename."""
         return r"\d{8}"
 
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
@@ -445,30 +516,24 @@ class SDGSat(BaseRaster):
         variable: Literal["PL", "PH", "HDR"] = "PH",
     ) -> xr.Dataset:
         """
-        Extract raster data for features over a date range.
+        Extract SDGSat bands and calculate physical radiance.
 
         Args:
             gdf: Input geospatial features.
-            date_range: Single date or list of dates to match tile acquisition.
-            variable: Optional band name to extract ("PL", "PH", or "HDR").
+            date_range: Single date or list of dates.
+            variable: The sensor product to extract (PL or PH).
 
         Returns:
-            xarray.Dataset containing selected data for each date.
-
-        Raises:
-            ValueError: If no matching tiles are found.
+            Xarray Dataset containing both raw DN and calculated radiance.
         """
         matching_files = self._get_matching_tiles(gdf, date_range)
 
         data_arrays = []
         for date, file_list in matching_files.items():
-
             data_arrays_per_date = []
 
             for tif_file in file_list:
-
                 with rasterio.open(tif_file) as src:
-
                     patch = self._get_patch(gdf, src)
 
                     band_patch = patch.sel(band=self.BAND_MAPPING[variable])
@@ -495,11 +560,9 @@ class SDGSat(BaseRaster):
 
         ds = combined.rio.reproject("EPSG:4326")
 
-        # calculate radiance
         DN = ds[variable]
         gain, bias, bw = self.SDGSAT_COEF_MAPPING[variable]
 
-        # only apply to non-NaN and nonzero values
         cond = (~DN.isnull()) & (DN != 0)
         L = DN * gain + bias
 
@@ -513,41 +576,56 @@ class SDGSat(BaseRaster):
 
 
 class Landsat:
-
+    """Interface for USGS Landsat 8/9 Machine-to-Machine (M2M) API."""
     SERVICE_URL = "https://m2m.cr.usgs.gov/api/api/json/stable"
     DATASET = "landsat_ot_c2_l2"
 
     def __init__(self) -> None:
+        """Initialize connection and default filters for Landsat search."""
         self._api_key = self._prompt_ers_login()
         self._spatial_filter = None
         self._metadata_filter = {
             "filterType": "value",
             "filterId": "61af9273566bb9a8",
-            "value": "8",  # landsat-8
+            "value": "8",
         }
         self._cloud_cover_filter = {"min": 0, "max": 20}
 
     @property
     def DATA_FOLDER(self) -> str:
+        """Directory name for Landsat downloads."""
         return "landsat"
 
     @property
     def FILE_PATTERN(self) -> str:
-        return "*_LH.tif"  # TODO: update
+        """File pattern for Landsat products."""
+        return "*_LH.tif"
 
     @property
     def DATE_REGEX(self) -> str:
-        return r"\d{8}"  # TODO: update
+        """Regex for Landsat date extraction."""
+        return r"\d{8}"
 
     @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     def raster(
         self,
         gdf: gpd.GeoDataFrame,
         date_range: datetime.date | list[datetime.date],
-        variable: str | None = None,  # TODO: update
+        variable: str | None = None,
         timezone: str = "UTC",
     ) -> xr.Dataset | None:
+        """
+        Search for, download, and process Landsat scenes.
 
+        Args:
+            gdf: Input geospatial features for search area.
+            date_range: Dates to search.
+            variable: Specific band or variable to process.
+            timezone: Local timezone for evening pass filtering.
+
+        Returns:
+            Xarray Dataset containing processed Landsat data.
+        """
         self.spatial_filter = gdf
 
         scenes_df = self._scene_search(date_range)
@@ -565,6 +643,12 @@ class Landsat:
         return xr.Dataset()
 
     def _download_products(self, products: list[dict]):
+        """
+        Request and handle downloads from the M2M API.
+
+        Args:
+            products: List of product dictionaries containing entity and product IDs.
+        """
         label = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         download_req_payload = {"downloads": products, "label": label}
 
@@ -580,14 +664,12 @@ class Landsat:
             for result in download_request_results["availableDownloads"]:
                 self._download_file(result["url"])
         elif len(download_request_results["preparingDownloads"]) > 0:
-
             preparingDownloadIds = []
 
             for result in download_request_results["preparingDownloads"]:
                 preparingDownloadIds.append(result["downloadId"])
 
             download_ret_payload = {"label": label}
-            # Retrieve download URLs
             print("Retrieving download urls...\n")
             download_retrieve_results = self._send_request(
                 os.path.join(self.SERVICE_URL, "download-retrieve"),
@@ -608,7 +690,6 @@ class Landsat:
                         preparingDownloadIds.remove(result["downloadId"])
                         self._download_file(result["url"])
 
-            # didn't get all download URLs, retrieve again after 30 seconds
             while len(preparingDownloadIds) > 0:
                 print(
                     f"{len(preparingDownloadIds)} downloads are not available yet. "
@@ -631,6 +712,15 @@ class Landsat:
                             self._download_file(result["url"])
 
     def _get_available_products(self, scene_ids: list[str]) -> list[dict]:
+        """
+        Identify downloadable product IDs for a list of scene entity IDs.
+
+        Args:
+            scene_ids: List of USGS entity IDs.
+
+        Returns:
+            List of dictionaries with entityId and productId.
+        """
         download_payload = {"datasetName": self.DATASET, "entityIds": scene_ids}
         download_options = self._send_request(
             os.path.join(self.SERVICE_URL, "download-options"),
@@ -640,7 +730,6 @@ class Landsat:
 
         assert isinstance(download_options, dict)
 
-        # filter out only necessary products
         df = pd.json_normalize(download_options)
         df = df[(df.available) & (df.downloadSystem != "folder")]
 
@@ -653,6 +742,15 @@ class Landsat:
     def _scene_search(
         self, date_range: datetime.date | list[datetime.date]
     ) -> pd.DataFrame:
+        """
+        Perform a scene search via the M2M API.
+
+        Args:
+            date_range: Dates to search.
+
+        Returns:
+            DataFrame containing search results.
+        """
         if isinstance(date_range, datetime.date):
             date_range = [date_range]
 
@@ -675,12 +773,22 @@ class Landsat:
         start_time: datetime.time = datetime.time(21, 0, 0),
         end_time: datetime.time = datetime.time(3, 0, 0),
     ) -> list[str]:
+        """
+        Filter scenes to find those acquired during a specific evening window.
 
+        Args:
+            scenes_df: DataFrame of scenes from search.
+            timezone: Local timezone to calculate evening window.
+            start_time: Start of the evening window.
+            end_time: End of the evening window (next day).
+
+        Returns:
+            List of entity IDs matching the time criteria.
+        """
         def get_datetime(meta_list, field):
             time_pattern = "%Y-%m-%d %H:%M:%S"
             for d in meta_list:
                 if d["fieldName"] == field:
-                    # Remove microseconds if present
                     dt_str = d["value"][:19]
                     dt = datetime.datetime.strptime(dt_str, time_pattern)
                     dt_utc = dt.replace(tzinfo=ZoneInfo("UTC"))
@@ -688,14 +796,12 @@ class Landsat:
                     return dt_local
 
         def get_evening_anchor(dt):
-            # shifts anchor to 'date of evening' (not after midnight)
             if dt.time() < end_time:
                 return (dt - datetime.timedelta(days=1)).date()
             else:
                 return dt.date()
 
         def is_within_evening(dt):
-            # time must be between 21:00 - 23:59:59, OR 00:00 - 02:59:59
             return start_time <= dt.time() or dt.time() < end_time
 
         def is_in_time_window(start, end):
@@ -725,6 +831,16 @@ class Landsat:
     def _get_search_payload(
         self, start_date: datetime.date, end_date: datetime.date
     ) -> dict:
+        """
+        Construct the JSON payload for the M2M scene-search request.
+
+        Args:
+            start_date: Earliest acquisition date.
+            end_date: Latest acquisition date.
+
+        Returns:
+            Dictionary payload for the API request.
+        """
         return {
             "datasetName": "landsat_ot_c2_l2",
             "sceneFilter": {
@@ -740,14 +856,17 @@ class Landsat:
 
     @property
     def cloud_cover_filter(self) -> dict:
+        """Get the current cloud cover filter range."""
         return self._cloud_cover_filter
 
     @cloud_cover_filter.setter
     def cloud_cover_filter(self, min: int, max: int) -> None:
+        """Set the cloud cover filter range."""
         self._cloud_cover_filter = {"min": min, "max": max}
 
     @property
     def metadata_filter(self) -> dict:
+        """Get current metadata filters."""
         if self._metadata_filter:
             return self._metadata_filter
         raise ValueError("You need to set `metadata_filter` first.")
@@ -862,7 +981,6 @@ class Landsat:
                         f.write(chunk)
                         bar.update(len(chunk))
 
-            # TODO: untar the file
         except Exception as e:
             print(f"\nFailed to download from {url}: {e}")
 

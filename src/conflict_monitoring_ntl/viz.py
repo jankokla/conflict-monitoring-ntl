@@ -3,7 +3,6 @@ import warnings
 import folium
 import geopandas as gpd
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import pycountry
 import seaborn as sns
@@ -18,91 +17,36 @@ from conflict_monitoring_ntl.config import PALETTE, SMOD_CLASS_ORDER
 from conflict_monitoring_ntl.utils import binarize_xarray
 
 
-def plot_xarray_time_comparison(ds: xr.Dataset, band_name: str, cmap: str = "inferno"):
-    """
-    Plots all images for the specified band in the xarray dataset side by side or in a
-    grid, automatically scaling each image using the 99th percentile of valid values.
-
-    Args:
-        ds: An xarray Dataset containing image data, with a 'time' dimension and bands.
-        band_name: Name of the band variable in the Dataset to plot.
-        cmap: Colormap for displaying the images. Defaults to "inferno".
-    Returns:
-        None. Displays the plot in matplotlib context.
-    """
-    date_dim = "time"
-    max_cols = 4
-
-    times = ds[date_dim].values
-    images = ds[band_name]
-    n = len(times)
-    n_cols = min(n, max_cols)
-    n_rows = int(np.ceil(n / max_cols))
-    _, axes = plt.subplots(n_rows, n_cols, figsize=(4 * n_cols, 4 * n_rows))
-    axes = np.array(axes).reshape(-1)
-
-    for i, ax in enumerate(axes[:n]):
-        img = images.isel({date_dim: i}).values.squeeze()
-        img = img / np.nanmax(img)  # normalize
-
-        valid_vals = img[img > 0]
-        vmax = np.percentile(valid_vals, 99) if valid_vals.size > 0 else 1
-
-        if img.ndim == 3 and img.shape[0] == 3 and img.shape[-1] != 3:
-            img = img.transpose(1, 2, 0)  # converts (3, h, w) → (h, w, 3)
-
-        ax.imshow(img, cmap=cmap, vmin=img.min(), vmax=vmax)
-
-        if isinstance(times[i], np.datetime64):
-            label = times[i].astype("M8[D]").astype(object)
-        else:
-            label = str(times[i])
-        ax.set_title(str(label))
-        ax.axis("off")
-
-    for ax in axes[n:]:
-        ax.axis("off")
-
-    plt.tight_layout()
-    plt.show()
-
-
 def plot_map_with_shape(
     gdf: gpd.GeoDataFrame, zoom_start: int = 10, is_layer_control: bool = True
 ) -> folium.Map:
     """
-    Plots geographic shapes from a GeoDataFrame on an interactive Folium map
-        with ESRI satellite and label layers.
+    Plot geographic shapes on an interactive Folium map with ESRI satellite layers.
 
     Args:
         gdf: A GeoDataFrame containing the shape(s) to display.
-        zoom_start: The initial zoom level for the map. Defaults to 10.
-        is_layer_control: If True, adds a layer control widget so users can
-            toggle visibility of basemaps and overlays (default True).
+        zoom_start: The initial zoom level for the map.
+        is_layer_control: If True, adds a widget to toggle basemaps and overlays.
 
     Returns:
-        A folium.Map instance with the shape overlay, ESRI base layers,
-            and (optionally) interactive layer controls.
+        A folium.Map instance with shape overlay and ESRI base layers.
     """
     warnings.filterwarnings("ignore", message="Geometry is in a geographic CRS.*")
 
     center = [gdf.geometry.centroid.y.mean(), gdf.geometry.centroid.x.mean()]
 
-    # tiles="CartoDB Positron"
     m = folium.Map(location=center, zoom_start=zoom_start, tiles=None)
 
-    # add base layer from ESRI
     folium.TileLayer(
-        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",  # noqa: E501
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         attr="Esri",
         name="Esri Satellite",
         overlay=False,
         control=True,
     ).add_to(m)
 
-    # add labels
     folium.TileLayer(
-        tiles="https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",  # noqa: E501
+        tiles="https://services.arcgisonline.com/arcgis/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
         attr="Esri",
         name="Labels",
         overlay=True,
@@ -133,7 +77,22 @@ def plot_admin_map_with_tiles(
     base_map: str = "CartoDB positron",
     zoom_start: int = 7,
 ) -> folium.Map:
-    # TODO: add docstring
+    """
+    Visualize administrative districts and their intersection with raster coverage.
+
+    Districts are color-coded based on whether they fall within the bounds of 
+    the available satellite raster data.
+
+    Args:
+        country_gdf: GeoDataFrame representing the national boundary.
+        raster_gdf: GeoDataFrame representing the footprint of satellite data.
+        admin_gdf: GeoDataFrame of administrative districts with 'is_within_raster' column.
+        base_map: The folium/leaflet tile provider string.
+        zoom_start: Initial zoom level.
+
+    Returns:
+        A folium.Map with country, raster, and color-coded district overlays.
+    """
     centroid = country_gdf.geometry[0].centroid
     m = folium.Map(
         location=[centroid.y, centroid.x], zoom_start=zoom_start, tiles=base_map
@@ -166,7 +125,17 @@ def plot_admin_map_with_tiles(
 
 
 def plot_binary(arr: xr.DataArray, satellite: str, threshold: float):
-    """Helper function for plotting binarized tiles."""
+    """
+    Helper function to visualize binarized satellite tiles using hvPlot.
+
+    Args:
+        arr: The continuous data array (e.g., radiance).
+        satellite: Name of the satellite sensor for the plot title.
+        threshold: The value used to separate 'lit' from 'unlit' pixels.
+
+    Returns:
+        An interactive HoloViews image plot.
+    """
     arr_binary = binarize_xarray(arr, threshold)
 
     return arr_binary.hvplot.image(
@@ -193,6 +162,24 @@ def plot_tile_comparison(
     colorbar=True,
     extra_plot_kwargs={},
 ):
+    """
+    Create a side-by-side interactive comparison of two xarray tiles.
+
+    Args:
+        arr_left: Data array for the left-hand plot.
+        arr_right: Data array for the right-hand plot.
+        title_left: Title for the left plot.
+        title_right: Title for the right plot.
+        clim_left: Color limit range for the left plot.
+        clim_right: Color limit range for the right plot.
+        cmap_left: Colormap for the left plot.
+        cmap_right: Colormap for the right plot.
+        colorbar: Whether to display the colorbar.
+        extra_plot_kwargs: Dictionary of additional arguments passed to hvplot.
+
+    Returns:
+        A HoloViews Layout containing two synchronized image plots.
+    """
     import hvplot.xarray
 
     left_plot = arr_left.hvplot.image(
@@ -221,13 +208,23 @@ def plot_tile_comparison(
     return left_plot + right_plot
 
 
-def plot_lighted_country_comparison_by_urbanisation(
+def plot_lit_country_comparison_by_urbanisation(
     df,
     colors: tuple = ("#006666", "#B2D8D8"),
-    labels: tuple = ("lighted", "non-lighted"),
+    labels: tuple = ("lit", "nonlit"),
     height: int = 4,
     aspect: float = 1.5,
 ):
+    """
+    Plot stacked histograms of pixel counts by urbanization degree across countries.
+
+    Args:
+        df: DataFrame containing 'country_code', 'smod_class', and 'bm_binary'.
+        colors: Tuple of two hex colors for 'lit' and 'non-lit' bars.
+        labels: Tuple of strings for the legend.
+        height: Height of each facet.
+        aspect: Aspect ratio of each facet.
+    """
     with sns.axes_style("whitegrid", {"grid.color": ".9", "grid.linestyle": ":"}):
         g = sns.FacetGrid(
             df, col="country_code", height=height, aspect=aspect, sharex=False
@@ -260,14 +257,27 @@ def plot_lighted_country_comparison_by_urbanisation(
         plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.93))
 
 
-def plot_lighted_proportion_comparison_by_urbanisation(
+def plot_lit_proportion_comparison_by_urbanisation(
     df,
     col: str = "continent",
     colors: tuple = ("#383060", "#dad7eb"),
-    labels: tuple = ("lighted", "non-lighted"),
+    labels: tuple = ("lit", "unlit"),
     height: int = 4,
     aspect: float = 1.5,
 ):
+    """
+    Plot the proportion of lit vs unlit pixels as a function of urbanization degree.
+
+    Useful for comparing urbanization light profiles across continents or regions.
+
+    Args:
+        df: DataFrame with geographic and classification data.
+        col: The column to facet the plots by (e.g., 'continent').
+        colors: Tuple of two hex colors for proportions.
+        labels: Legend labels.
+        height: Facet height.
+        aspect: Facet aspect ratio.
+    """
     with sns.axes_style("whitegrid", {"grid.color": ".9", "grid.linestyle": ":"}):
         g = sns.FacetGrid(df, col=col, height=height, aspect=aspect)
 
@@ -297,6 +307,13 @@ def plot_lighted_proportion_comparison_by_urbanisation(
 
 
 def plot_world_coverage(country_codes: list[str], country_names: list[str]):
+    """
+    Highlight specific countries on a global map.
+
+    Args:
+        country_codes: List of ISO3166-1-Alpha-3 codes to highlight.
+        country_names: List of country names to highlight.
+    """
     from matplotlib.colors import ListedColormap
 
     world = gpd.read_file("https://datahub.io/core/geo-countries/r/countries.geojson")
@@ -328,6 +345,17 @@ def plot_radiance_boxenplots(
     show_labels: bool = True,
     show_legend: bool = True,
 ):
+    """
+    Plot boxen plots (letter-value plots) of radiance distribution by urbanization degree.
+
+    Args:
+        df: DataFrame containing radiance, smod_class, and continent.
+        vertical_line: If provided, draws a vertical dashed line at this x-value (threshold).
+        height: Plot height.
+        aspect: Plot aspect ratio.
+        show_labels: Whether to show axis labels.
+        show_legend: Whether to show the continent legend.
+    """
     with sns.axes_style("whitegrid", {"grid.color": ".9", "grid.linestyle": ":"}):
         g = sns.catplot(
             data=df,
@@ -362,7 +390,7 @@ def plot_radiance_boxenplots(
 
         if vertical_line:
             ax = g.axes.flat[0]
-            ax.axvline(x=1, color="#DB8029", linestyle="--", linewidth=1)
+            ax.axvline(x=1, color="#F9CB40", linestyle="--", linewidth=3)
 
 
 def plot_scatter(
@@ -375,6 +403,19 @@ def plot_scatter(
     figsize: tuple = (12, 7),
     legend_loc: str = "upper left",
 ):
+    """
+    Plot a scatter plot of metrics (e.g., F1 vs HDI) with country annotations.
+
+    Args:
+        df: DataFrame with country metrics.
+        countries_to_plot: List of country names to label with arrows.
+        x: Column name for the x-axis.
+        y: Column name for the y-axis.
+        xlabel: Custom label for x-axis.
+        ylabel: Custom label for y-axis.
+        figsize: Matplotlib figure size.
+        legend_loc: Location of the legend.
+    """
     df["is_plotted"] = False
     df.loc[df["country"].isin(countries_to_plot), "is_plotted"] = True
 
@@ -391,7 +432,6 @@ def plot_scatter(
             alpha=0.8,
         )
 
-        # Axis labels
         ax.set_xlabel(xlabel, fontsize=13, labelpad=20)
         ax.set_ylabel(ylabel, fontsize=13, labelpad=20)
 
@@ -434,6 +474,17 @@ def plot_scatter_bokeh(
     ylabel: str = "f1",
     legend_loc: str = "top_left",
 ):
+    """
+    Create an interactive Bokeh scatter plot with hover tooltips for country metrics.
+
+    Args:
+        df: DataFrame with country metrics.
+        x: X-axis column name.
+        y: Y-axis column name.
+        xlabel: Label for x-axis.
+        ylabel: Label for y-axis.
+        legend_loc: Location of the interactive legend.
+    """
     continents = df["continent"].unique().tolist()
     palette = Set2[max(3, len(continents))]
 
@@ -467,6 +518,13 @@ def plot_scatter_bokeh(
 
 
 def plot_regression_radiance_by_country(df: pd.DataFrame, color: str):
+    """
+    Plot a linear regression between HDI and mean monthly radiance.
+
+    Args:
+        df: DataFrame containing 'hdi_2020' and 'black_marble_radiance_monthly'.
+        color: Color for the regression line and points.
+    """
     plt.figure(figsize=(12, 8))
     with sns.axes_style("whitegrid", {"grid.color": ".9", "grid.linestyle": ":"}):
         ax = sns.regplot(
