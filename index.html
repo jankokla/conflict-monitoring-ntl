@@ -1,0 +1,808 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://dummy.org/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="assets/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Conflict Monitoring - NTL</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+  
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+  
+  <style>:root{--md-admonition-icon--note:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20448%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%207.1.0%20by%20%40fontawesome%20-%20https%3A//fontawesome.com%20License%20-%20https%3A//fontawesome.com/license/free%20%28Icons%3A%20CC%20BY%204.0%2C%20Fonts%3A%20SIL%20OFL%201.1%2C%20Code%3A%20MIT%20License%29%20Copyright%202025%20Fonticons%2C%20Inc.--%3E%3Cpath%20d%3D%22M64%20480c-35.3%200-64-28.7-64-64V96c0-35.3%2028.7-64%2064-64h320c35.3%200%2064%2028.7%2064%2064v213.5c0%2017-6.7%2033.3-18.7%2045.3L322.7%20461.3c-12%2012-28.3%2018.7-45.3%2018.7zm325.5-176H296c-13.3%200-24%2010.7-24%2024v93.5z%22/%3E%3C/svg%3E');--md-admonition-icon--abstract:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20448%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%207.1.0%20by%20%40fontawesome%20-%20https%3A//fontawesome.com%20License%20-%20https%3A//fontawesome.com/license/free%20%28Icons%3A%20CC%20BY%204.0%2C%20Fonts%3A%20SIL%20OFL%201.1%2C%20Code%3A%20MIT%20License%29%20Copyright%202025%20Fonticons%2C%20Inc.--%3E%3Cpath%20d%3D%22M384%20512H96c-53%200-96-43-96-96V96C0%2043%2043%200%2096%200h304c26.5%200%2048%2021.5%2048%2048v288c0%2020.9-13.4%2038.7-32%2045.3V448c17.7%200%2032%2014.3%2032%2032s-14.3%2032-32%2032zM96%20384c-17.7%200-32%2014.3-32%2032s14.3%2032%2032%2032h256v-64zm32-232c0%2013.3%2010.7%2024%2024%2024h176c13.3%200%2024-10.7%2024-24s-10.7-24-24-24H152c-13.3%200-24%2010.7-24%2024m24%2072c-13.3%200-24%2010.7-24%2024s10.7%2024%2024%2024h176c13.3%200%2024-10.7%2024-24s-10.7-24-24-24z%22/%3E%3C/svg%3E');--md-admonition-icon--info:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%207.1.0%20by%20%40fontawesome%20-%20https%3A//fontawesome.com%20License%20-%20https%3A//fontawesome.com/license/free%20%28Icons%3A%20CC%20BY%204.0%2C%20Fonts%3A%20SIL%20OFL%201.1%2C%20Code%3A%20MIT%20License%29%20Copyright%202025%20Fonticons%2C%20Inc.--%3E%3Cpath%20d%3D%22M256%20512a256%20256%200%201%200%200-512%20256%20256%200%201%200%200%20512m-32-352a32%2032%200%201%201%2064%200%2032%2032%200%201%201-64%200m-8%2064h48c13.3%200%2024%2010.7%2024%2024v88h8c13.3%200%2024%2010.7%2024%2024s-10.7%2024-24%2024h-80c-13.3%200-24-10.7-24-24s10.7-24%2024-24h24v-64h-24c-13.3%200-24-10.7-24-24s10.7-24%2024-24%22/%3E%3C/svg%3E');--md-admonition-icon--tip:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%207.1.0%20by%20%40fontawesome%20-%20https%3A//fontawesome.com%20License%20-%20https%3A//fontawesome.com/license/free%20%28Icons%3A%20CC%20BY%204.0%2C%20Fonts%3A%20SIL%20OFL%201.1%2C%20Code%3A%20MIT%20License%29%20Copyright%202025%20Fonticons%2C%20Inc.--%3E%3Cpath%20d%3D%22M461.2%2018.9C472.7%2024%20480%2035.4%20480%2048v416c0%2012.6-7.3%2024-18.8%2029.1s-24.8%203.2-34.3-5.1l-46.6-40.7c-43.6-38.1-98.7-60.3-156.4-63V480c0%2017.7-14.3%2032-32%2032h-32c-17.7%200-32-14.3-32-32v-96C57.3%20384%200%20326.7%200%20256s57.3-128%20128-128h84.5c61.8-.2%20121.4-22.7%20167.9-63.3L427%2024c9.4-8.3%2022.9-10.2%2034.3-5.1zM224%20320v.2c70.3%202.7%20137.8%2028.5%20192%2073.4V118.3c-54.2%2044.9-121.7%2070.7-192%2073.4z%22/%3E%3C/svg%3E');--md-admonition-icon--success:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20448%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%207.1.0%20by%20%40fontawesome%20-%20https%3A//fontawesome.com%20License%20-%20https%3A//fontawesome.com/license/free%20%28Icons%3A%20CC%20BY%204.0%2C%20Fonts%3A%20SIL%20OFL%201.1%2C%20Code%3A%20MIT%20License%29%20Copyright%202025%20Fonticons%2C%20Inc.--%3E%3Cpath%20d%3D%22M434.8%2070.1c14.3%2010.4%2017.5%2030.4%207.1%2044.7l-256%20352c-5.5%207.6-14%2012.3-23.4%2013.1s-18.5-2.7-25.1-9.3l-128-128c-12.5-12.5-12.5-32.8%200-45.3s32.8-12.5%2045.3%200l101.5%20101.5%20234-321.7c10.4-14.3%2030.4-17.5%2044.7-7.1z%22/%3E%3C/svg%3E');--md-admonition-icon--question:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%207.1.0%20by%20%40fontawesome%20-%20https%3A//fontawesome.com%20License%20-%20https%3A//fontawesome.com/license/free%20%28Icons%3A%20CC%20BY%204.0%2C%20Fonts%3A%20SIL%20OFL%201.1%2C%20Code%3A%20MIT%20License%29%20Copyright%202025%20Fonticons%2C%20Inc.--%3E%3Cpath%20d%3D%22M256%20512a256%20256%200%201%200%200-512%20256%20256%200%201%200%200%20512m0-336c-17.7%200-32%2014.3-32%2032%200%2013.3-10.7%2024-24%2024s-24-10.7-24-24c0-44.2%2035.8-80%2080-80s80%2035.8%2080%2080c0%2047.2-36%2067.2-56%2074.5v3.8c0%2013.3-10.7%2024-24%2024s-24-10.7-24-24v-8.1c0-20.5%2014.8-35.2%2030.1-40.2%206.4-2.1%2013.2-5.5%2018.2-10.3%204.3-4.2%207.7-10%207.7-19.6%200-17.7-14.3-32-32-32zm-32%20192a32%2032%200%201%201%2064%200%2032%2032%200%201%201-64%200%22/%3E%3C/svg%3E');--md-admonition-icon--warning:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%207.1.0%20by%20%40fontawesome%20-%20https%3A//fontawesome.com%20License%20-%20https%3A//fontawesome.com/license/free%20%28Icons%3A%20CC%20BY%204.0%2C%20Fonts%3A%20SIL%20OFL%201.1%2C%20Code%3A%20MIT%20License%29%20Copyright%202025%20Fonticons%2C%20Inc.--%3E%3Cpath%20d%3D%22M256%200c14.7%200%2028.2%208.1%2035.2%2021l216%20400c6.7%2012.4%206.4%2027.4-.8%2039.5S486.1%20480%20472%20480H40c-14.1%200-27.2-7.4-34.4-19.5s-7.5-27.1-.8-39.5l216-400c7-12.9%2020.5-21%2035.2-21m0%20352a32%2032%200%201%200%200%2064%2032%2032%200%201%200%200-64m0-192c-18.2%200-32.7%2015.5-31.4%2033.7l7.4%20104c.9%2012.5%2011.4%2022.3%2023.9%2022.3%2012.6%200%2023-9.7%2023.9-22.3l7.4-104c1.3-18.2-13.1-33.7-31.4-33.7z%22/%3E%3C/svg%3E');--md-admonition-icon--failure:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20576%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%207.1.0%20by%20%40fontawesome%20-%20https%3A//fontawesome.com%20License%20-%20https%3A//fontawesome.com/license/free%20%28Icons%3A%20CC%20BY%204.0%2C%20Fonts%3A%20SIL%20OFL%201.1%2C%20Code%3A%20MIT%20License%29%20Copyright%202025%20Fonticons%2C%20Inc.--%3E%3Cpath%20d%3D%22M480-16c6.9%200%2013%204.4%2015.2%2010.9l13.5%2040.4%2040.4%2013.5C555.6%2051%20560%2057.1%20560%2064s-4.4%2013-10.9%2015.2l-40.4%2013.5-13.5%2040.4c-2.2%206.5-8.3%2010.9-15.2%2010.9s-13-4.4-15.2-10.9l-13.5-40.4-40.4-13.5C404.4%2077%20400%2070.9%20400%2064s4.4-13%2010.9-15.2l40.4-13.5%2013.5-40.4C467-11.6%20473.1-16%20480-16M321.4%2097.4c12.5-12.5%2032.8-12.5%2045.3%200l80%2080c12.5%2012.5%2012.5%2032.8%200%2045.3l-10.9%2010.9c7.9%2022%2012.2%2045.7%2012.2%2070.5%200%20114.9-93.1%20208-208%20208S32%20418.9%2032%20304%20125.1%2096%20240%2096c24.7%200%2048.5%204.3%2070.5%2012.3zM144%20304c0-53%2043-96%2096-96%2013.3%200%2024-10.7%2024-24s-10.7-24-24-24c-79.5%200-144%2064.5-144%20144%200%2013.3%2010.7%2024%2024%2024s24-10.7%2024-24%22/%3E%3C/svg%3E');--md-admonition-icon--danger:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%207.1.0%20by%20%40fontawesome%20-%20https%3A//fontawesome.com%20License%20-%20https%3A//fontawesome.com/license/free%20%28Icons%3A%20CC%20BY%204.0%2C%20Fonts%3A%20SIL%20OFL%201.1%2C%20Code%3A%20MIT%20License%29%20Copyright%202025%20Fonticons%2C%20Inc.--%3E%3Cpath%20d%3D%22M416%20427.4c58.5-44%2096-111.6%2096-187.4C512%20107.5%20397.4%200%20256%200S0%20107.5%200%20240c0%2075.8%2037.5%20143.4%2096%20187.4V464c0%2026.5%2021.5%2048%2048%2048h32v-40c0-13.3%2010.7-24%2024-24s24%2010.7%2024%2024v40h64v-40c0-13.3%2010.7-24%2024-24s24%2010.7%2024%2024v40h32c26.5%200%2048-21.5%2048-48zM96%20256a64%2064%200%201%201%20128%200%2064%2064%200%201%201-128%200m256-64a64%2064%200%201%201%200%20128%2064%2064%200%201%201%200-128%22/%3E%3C/svg%3E');--md-admonition-icon--bug:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20640%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%207.1.0%20by%20%40fontawesome%20-%20https%3A//fontawesome.com%20License%20-%20https%3A//fontawesome.com/license/free%20%28Icons%3A%20CC%20BY%204.0%2C%20Fonts%3A%20SIL%20OFL%201.1%2C%20Code%3A%20MIT%20License%29%20Copyright%202025%20Fonticons%2C%20Inc.--%3E%3Cpath%20d%3D%22M352%200c0-17.7-14.3-32-32-32s-32%2014.3-32%2032v64h-96c-53%200-96%2043-96%2096v224c0%2053%2043%2096%2096%2096h256c53%200%2096-43%2096-96V160c0-53-43-96-96-96h-96zM160%20368c0-13.3%2010.7-24%2024-24h32c13.3%200%2024%2010.7%2024%2024s-10.7%2024-24%2024h-32c-13.3%200-24-10.7-24-24m120%200c0-13.3%2010.7-24%2024-24h32c13.3%200%2024%2010.7%2024%2024s-10.7%2024-24%2024h-32c-13.3%200-24-10.7-24-24m120%200c0-13.3%2010.7-24%2024-24h32c13.3%200%2024%2010.7%2024%2024s-10.7%2024-24%2024h-32c-13.3%200-24-10.7-24-24M224%20176a48%2048%200%201%201%200%2096%2048%2048%200%201%201%200-96m144%2048a48%2048%200%201%201%2096%200%2048%2048%200%201%201-96%200m-304%200c0-17.7-14.3-32-32-32S0%20206.3%200%20224v96c0%2017.7%2014.3%2032%2032%2032s32-14.3%2032-32zm544-32c-17.7%200-32%2014.3-32%2032v96c0%2017.7%2014.3%2032%2032%2032s32-14.3%2032-32v-96c0-17.7-14.3-32-32-32%22/%3E%3C/svg%3E');--md-admonition-icon--example:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20448%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%207.1.0%20by%20%40fontawesome%20-%20https%3A//fontawesome.com%20License%20-%20https%3A//fontawesome.com/license/free%20%28Icons%3A%20CC%20BY%204.0%2C%20Fonts%3A%20SIL%20OFL%201.1%2C%20Code%3A%20MIT%20License%29%20Copyright%202025%20Fonticons%2C%20Inc.--%3E%3Cpath%20d%3D%22M288%200H128c-17.7%200-32%2014.3-32%2032s14.3%2032%2032%2032v151.5L7.5%20426.3C2.6%20435%200%20444.7%200%20454.7%200%20486.4%2025.6%20512%2057.3%20512h333.4c31.6%200%2057.3-25.6%2057.3-57.3%200-10-2.6-19.8-7.5-28.4L320%20215.5V64c17.7%200%2032-14.3%2032-32S337.7%200%20320%200zm-96%20215.5V64h64v151.5c0%2011.1%202.9%2022.1%208.4%2031.8L306%20320H142l41.6-72.7c5.5-9.7%208.4-20.6%208.4-31.8%22/%3E%3C/svg%3E');--md-admonition-icon--quote:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20448%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%207.1.0%20by%20%40fontawesome%20-%20https%3A//fontawesome.com%20License%20-%20https%3A//fontawesome.com/license/free%20%28Icons%3A%20CC%20BY%204.0%2C%20Fonts%3A%20SIL%20OFL%201.1%2C%20Code%3A%20MIT%20License%29%20Copyright%202025%20Fonticons%2C%20Inc.--%3E%3Cpath%20d%3D%22M0%20216C0%20149.7%2053.7%2096%20120%2096h8c17.7%200%2032%2014.3%2032%2032s-14.3%2032-32%2032h-8c-30.9%200-56%2025.1-56%2056v8h64c35.3%200%2064%2028.7%2064%2064v64c0%2035.3-28.7%2064-64%2064H64c-35.3%200-64-28.7-64-64zm256%200c0-66.3%2053.7-120%20120-120h8c17.7%200%2032%2014.3%2032%2032s-14.3%2032-32%2032h-8c-30.9%200-56%2025.1-56%2056v8h64c35.3%200%2064%2028.7%2064%2064v64c0%2035.3-28.7%2064-64%2064h-64c-35.3%200-64-28.7-64-64z%22/%3E%3C/svg%3E');}</style>
+
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="assets/stylesheets/panzoom.css">
+    
+      <link rel="stylesheet" href="assets/stylesheets/mkdocs_d2_plugin.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  <meta name="panzoom-theme" content="material">
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#introduction" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="Conflict Monitoring - NTL" class="md-header__button md-logo" aria-label="Conflict Monitoring - NTL" data-md-component="logo">
+      
+  <img src="assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Conflict Monitoring - NTL
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Introduction
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="Conflict Monitoring - NTL" class="md-nav__button md-logo" aria-label="Conflict Monitoring - NTL" data-md-component="logo">
+      
+  <img src="assets/logo.svg" alt="logo">
+
+    </a>
+    Conflict Monitoring - NTL
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    NTL Products
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    NTL Products
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="analysis/satellites/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Satellites
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="notebooks/data_analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="notebooks/precision_recall/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Precision-Recall
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regional Robustness
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Regional Robustness
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="notebooks/bm_ghsl_match/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    BM-GHSL Surface Match
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="notebooks/bm_ghsl_smod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Urbanisation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Progress Updates
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Progress Updates
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="notebooks/progress_update/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    November
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="introduction">Introduction</h1>
+<p>Satellite observations of the Earth’s nighttime illumination, referred to as nighttime light (NTL), provide a unique vantage point for analyzing global patterns and changes in human activity, infrastructure, and environmental impact. Numerous studies have shown that NTL can be applied to monitor slow changing human phenomena, such as mapping urban areas <sup id="fnref:urban_areas"><a class="footnote-ref" href="#fn:urban_areas">1</a></sup>, estimating socioeconomic parameters <sup id="fnref:gdp_proxy"><a class="footnote-ref" href="#fn:gdp_proxy">2</a></sup> and quantifying light pollution <sup id="fnref:light_pollution"><a class="footnote-ref" href="#fn:light_pollution">3</a></sup>. These insights rely on a growing suite of satellite sensors specifically designed to capture variations in nighttime illumination.</p>
+<p>Among them, NASA’s Black Marble has become the \textit{de facto} standard product for global nighttime light analysis, providing openly accessible daily radiance data from the VIIRS Day–Night Band at 500 m resolution <sup id="fnref:roman_2018"><a class="footnote-ref" href="#fn:roman_2018">4</a></sup>. In contrast, the Sustainable Development Goals Science Satellite 1 (SDGSAT‑1), developed by the International Research Center of Big Data for Sustainable Development Goals (CBAS), captures panchromatic imagery with its Glimmer Imager at a much finer 10 m resolution <sup id="fnref:sdgsat"><a class="footnote-ref" href="#fn:sdgsat">5</a></sup>, revealing detailed urban and infrastructural features. Other missions primarily designed for daytime observations, such as EnMAP <sup id="fnref:enmap"><a class="footnote-ref" href="#fn:enmap">6</a></sup><sup id="fnref:enmap_ntl"><a class="footnote-ref" href="#fn:enmap_ntl">7</a></sup> and Landsat‑8 <sup id="fnref:landsat_ntl"><a class="footnote-ref" href="#fn:landsat_ntl">8</a></sup>, have also been applied to the monitoring of nighttime illumination.</p>
+<p>These advances in spatial and temporal resolution have expanded nighttime light research beyond long-term urbanization and economic studies to the detection of rapid, short-term events. In particular, advances in temporal resolution now allow sensors to support near real‑time monitoring of rapidly evolving events, including conflicts. Building on this, a growing body of work shows that conflicts typically lead to declines in nighttime lights, reflecting destroyed infrastructure <sup id="fnref:ukraine_light"><a class="footnote-ref" href="#fn:ukraine_light">9</a></sup>, disrupted energy supplies <sup id="fnref:iraqi_civil_war"><a class="footnote-ref" href="#fn:iraqi_civil_war">10</a></sup>, curfews that restrict human activity <sup id="fnref:ukraine_power_shortages"><a class="footnote-ref" href="#fn:ukraine_power_shortages">11</a></sup>, and the deliberate extinguishing of lights to avoid detection <sup id="fnref:zhukov_ukraine"><a class="footnote-ref" href="#fn:zhukov_ukraine">12</a></sup>. At the same time, specific processes such as rescue operations or fires following attacks can locally increase NTL in affected areas <sup id="fnref:increased_light"><a class="footnote-ref" href="#fn:increased_light">13</a></sup>.</p>
+<p>Despite the new potential, NTL-based conflict monitoring faces fundamental limitations related to its dependence on existing lighting infrastructure.  Armed violence disproportionately affects low-income countries and economically marginalized regions <sup id="fnref:conflict_poor"><a class="footnote-ref" href="#fn:conflict_poor">14</a></sup>, and an estimated 1.18 billion people in the developing world lack electricity and therefore detectable NTL <sup id="fnref:energy_poverty"><a class="footnote-ref" href="#fn:energy_poverty">15</a></sup>. While the feasibility of NTL-based monitoring has been demonstrated in in urban regions <sup id="fnref2:ukraine_light"><a class="footnote-ref" href="#fn:ukraine_light">9</a></sup>, subsequent work <sup id="fnref:bara2025"><a class="footnote-ref" href="#fn:bara2025">16</a></sup> indicates that nearly one third of people affected by violence live in areas without detectable NTL, making it difficult to monitor potential declines in nighttime illumination.</p>
+<p>The aim of this project is to evaluate the suitability of several nighttime light (NTL) satellite products for conflict monitoring applications, with a particular focus on the conditions under which they can reliably capture conflict-related disruptions. Specifically, we assess four products – Black Marble, SDGSAT‑1, EnMAP, and Landsat‑8 – using a comprehensive set of criteria that reflect the requirements of armed-conflict monitoring. A unified data-processing pipeline is developed to harmonize these heterogeneous sensors, enabling consistent comparisons and facilitating future multi-sensor NTL analyses. Beyond sensor performance, the study also highlights regional disparities in how NTL relates to different types of built-up environments and development levels, thereby identifying where baseline radiance patterns can be established and where sudden declines are most likely to indicate conflict-driven disruption.</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:urban_areas">
+<p>Zuoqi Chen, Bailang Yu, Yuyu Zhou, Hongxing Liu, Chengshu Yang, Kaifang Shi, and Jianping Wu. Mapping global urban areas from 2000 to 2012 using time-series nighttime light data and modis products. <em>IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing</em>, 12(4):1143&ndash;1153, 2019. <a href="https://doi.org/10.1109/JSTARS.2019.2900457">doi:10.1109/JSTARS.2019.2900457</a>.&#160;<a class="footnote-backref" href="#fnref:urban_areas" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:gdp_proxy">
+<p>Jiansheng Wu, Zheng Wang, Weifeng Li, and Jian Peng. Exploring factors affecting the relationship between light consumption and gdp based on dmsp/ols nighttime satellite imagery. <em>Remote Sensing of Environment</em>, 134:111&ndash;119, 2013. URL: <a href="https://www.sciencedirect.com/science/article/pii/S0034425713000734">https://www.sciencedirect.com/science/article/pii/S0034425713000734</a>, <a href="https://doi.org/https://doi.org/10.1016/j.rse.2013.03.001">doi:https://doi.org/10.1016/j.rse.2013.03.001</a>.&#160;<a class="footnote-backref" href="#fnref:gdp_proxy" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:light_pollution">
+<p>Wei Jiang, Guojin He, Tengfei Long, Chen Wang, Yuan Ni, and Ruiqi Ma. Assessing light pollution in china based on nighttime light imagery. <em>Remote Sensing</em>, 2017. URL: <a href="https://www.mdpi.com/2072-4292/9/2/135">https://www.mdpi.com/2072-4292/9/2/135</a>, <a href="https://doi.org/10.3390/rs9020135">doi:10.3390/rs9020135</a>.&#160;<a class="footnote-backref" href="#fnref:light_pollution" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn:roman_2018">
+<p>Miguel O. Román, Zhuosen Wang, Qingsong Sun, Virginia Kalb, Steven D. Miller, Andrew Molthan, Lori Schultz, Jordan Bell, Eleanor C. Stokes, Bhartendu Pandey, Karen C. Seto, Dorothy Hall, Tomohiro Oda, Robert E. Wolfe, Gary Lin, Navid Golpayegani, Sadashiva Devadiga, Carol Davidson, Sudipta Sarkar, Cid Praderas, Jeffrey Schmaltz, Ryan Boller, Joshua Stevens, Olga M. Ramos González, Elizabeth Padilla, José Alonso, Yasmín Detrés, Roy Armstrong, Ismael Miranda, Yasmín Conte, Nitza Marrero, Kytt MacManus, Thomas Esch, and Edward J. Masuoka. Nasa's black marble nighttime lights product suite. <em>Remote Sensing of Environment</em>, 210:113&ndash;143, 2018. URL: <a href="https://www.sciencedirect.com/science/article/pii/S003442571830110X">https://www.sciencedirect.com/science/article/pii/S003442571830110X</a>, <a href="https://doi.org/https://doi.org/10.1016/j.rse.2018.03.017">doi:https://doi.org/10.1016/j.rse.2018.03.017</a>.&#160;<a class="footnote-backref" href="#fnref:roman_2018" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+<li id="fn:sdgsat">
+<p>Huadong Guo, Changyong Dou, Hongyu Chen, Jianbo Liu, Bihong Fu, Xiaoming Li, Ziming Zou, and Dong Liang. Sdgsat-1: the world’s first scientific satellite for sustainable development goals. <em>Science Bulletin</em>, 68(1):34&ndash;38, 2023. URL: <a href="https://www.sciencedirect.com/science/article/pii/S2095927322005928">https://www.sciencedirect.com/science/article/pii/S2095927322005928</a>, <a href="https://doi.org/https://doi.org/10.1016/j.scib.2022.12.014">doi:https://doi.org/10.1016/j.scib.2022.12.014</a>.&#160;<a class="footnote-backref" href="#fnref:sdgsat" title="Jump back to footnote 5 in the text">&#8617;</a></p>
+</li>
+<li id="fn:enmap">
+<p>Luis Guanter, Hermann Kaufmann, Karl Segl, Saskia Foerster, Christian Rogass, Sabine Chabrillat, Theres Kuester, André Hollstein, Godela Rossner, Christian Chlebek, Christoph Straif, Sebastian Fischer, Stefanie Schrader, Tobias Storch, Uta Heiden, Andreas Mueller, Martin Bachmann, Helmut Mühle, Rupert Müller, Martin Habermeyer, Andreas Ohndorf, Joachim Hill, Henning Buddenbaum, Patrick Hostert, Sebastian Van der Linden, Pedro J. Leitão, Andreas Rabe, Roland Doerffer, Hajo Krasemann, Hongyan Xi, Wolfram Mauser, Tobias Hank, Matthias Locherer, Michael Rast, Karl Staenz, and Bernhard Sang. The enmap spaceborne imaging spectroscopy mission for earth observation. <em>Remote Sensing</em>, 7(7):8830–8857, 2015. URL: <a href="https://www.mdpi.com/2072-4292/7/7/8830">https://www.mdpi.com/2072-4292/7/7/8830</a>, <a href="https://doi.org/10.3390/rs70708830">doi:10.3390/rs70708830</a>.&#160;<a class="footnote-backref" href="#fnref:enmap" title="Jump back to footnote 6 in the text">&#8617;</a></p>
+</li>
+<li id="fn:enmap_ntl">
+<p>Leevi Lind, Daniele Cerra, Miguel Pato, and Ilkka Pölönen. Analyzing artificial nighttime lighting using hyperspectral data from enmap. In <em>IGARSS 2024 - 2024 IEEE International Geoscience and Remote Sensing Symposium</em>, volume, 8069&ndash;8073. 2024. <a href="https://doi.org/10.1109/IGARSS53475.2024.10641253">doi:10.1109/IGARSS53475.2024.10641253</a>.&#160;<a class="footnote-backref" href="#fnref:enmap_ntl" title="Jump back to footnote 7 in the text">&#8617;</a></p>
+</li>
+<li id="fn:landsat_ntl">
+<p>Noam Levin and Stuart Phinn. Illuminating the capabilities of landsat 8 for mapping night lights. <em>Remote Sensing of Environment</em>, 182:27&ndash;38, 2016. URL: <a href="https://www.sciencedirect.com/science/article/pii/S0034425716301857">https://www.sciencedirect.com/science/article/pii/S0034425716301857</a>, <a href="https://doi.org/https://doi.org/10.1016/j.rse.2016.04.021">doi:https://doi.org/10.1016/j.rse.2016.04.021</a>.&#160;<a class="footnote-backref" href="#fnref:landsat_ntl" title="Jump back to footnote 8 in the text">&#8617;</a></p>
+</li>
+<li id="fn:ukraine_light">
+<p>Lin Wang, Henggang Lei, and Hanqiu Xu. Analysis of nighttime light changes and trends in the one year anniversary of the russia-ukraine conflict. <em>IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing</em>, PP:1&ndash;19, 01 2024. <a href="https://doi.org/10.1109/JSTARS.2024.3357727">doi:10.1109/JSTARS.2024.3357727</a>.&#160;<a class="footnote-backref" href="#fnref:ukraine_light" title="Jump back to footnote 9 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:ukraine_light" title="Jump back to footnote 9 in the text">&#8617;</a></p>
+</li>
+<li id="fn:iraqi_civil_war">
+<p>Xi Li, Shanshan Liu, Michael Jendryke, Deren Li, and Chuanqing Wu. Night-time light dynamics during the iraqi civil war. <em>Remote Sensing</em>, 2018. URL: <a href="https://www.mdpi.com/2072-4292/10/6/858">https://www.mdpi.com/2072-4292/10/6/858</a>, <a href="https://doi.org/10.3390/rs10060858">doi:10.3390/rs10060858</a>.&#160;<a class="footnote-backref" href="#fnref:iraqi_civil_war" title="Jump back to footnote 10 in the text">&#8617;</a></p>
+</li>
+<li id="fn:ukraine_power_shortages">
+<p>Zihao Zheng, Zhifeng Wu, Zheng Cao, Qifei Zhang, Yingbiao Chen, Guanhua Guo, Zhiwei Yang, Cheng Guo, Xin Wang, and Francesco Marinello. Estimates of power shortages and affected populations during the initial period of the ukrainian-russian conflict. <em>Remote Sensing</em>, 2022. URL: <a href="https://www.mdpi.com/2072-4292/14/19/4793">https://www.mdpi.com/2072-4292/14/19/4793</a>, <a href="https://doi.org/10.3390/rs14194793">doi:10.3390/rs14194793</a>.&#160;<a class="footnote-backref" href="#fnref:ukraine_power_shortages" title="Jump back to footnote 11 in the text">&#8617;</a></p>
+</li>
+<li id="fn:zhukov_ukraine">
+<p>Yuri M. Zhukov. Near-real time analysis of war and economic activity during russia’s invasion of ukraine. <em>Journal of Comparative Economics</em>, 51(4):1232&ndash;1243, 2023. URL: <a href="https://www.sciencedirect.com/science/article/pii/S0147596723000574">https://www.sciencedirect.com/science/article/pii/S0147596723000574</a>, <a href="https://doi.org/https://doi.org/10.1016/j.jce.2023.06.003">doi:https://doi.org/10.1016/j.jce.2023.06.003</a>.&#160;<a class="footnote-backref" href="#fnref:zhukov_ukraine" title="Jump back to footnote 12 in the text">&#8617;</a></p>
+</li>
+<li id="fn:increased_light">
+<p>D. Cerra, N. Merkle, C. Henry, S. Gapp, and V. Gstaiger. Increases in night lights intensity reveal extreme events: a case of study on the ongoing conflict in ukraine. <em>ISPRS Annals of the Photogrammetry, Remote Sensing and Spatial Information Sciences</em>, X-3-2024:53–59, 2024. URL: <a href="https://isprs-annals.copernicus.org/articles/X-3-2024/53/2024/">https://isprs-annals.copernicus.org/articles/X-3-2024/53/2024/</a>, <a href="https://doi.org/10.5194/isprs-annals-X-3-2024-53-2024">doi:10.5194/isprs-annals-X-3-2024-53-2024</a>.&#160;<a class="footnote-backref" href="#fnref:increased_light" title="Jump back to footnote 13 in the text">&#8617;</a></p>
+</li>
+<li id="fn:conflict_poor">
+<p>Lars‐Erik Cederman, Nils B. Weidmann, and Kristian Skrede Gleditsch. Horizontal inequalities and ethnonationalist civil war: a global comparison. <em>American Political Science Review</em>, 105:478 &ndash; 495, 2011. URL: <a href="https://api.semanticscholar.org/CorpusID:53394183">https://api.semanticscholar.org/CorpusID:53394183</a>.&#160;<a class="footnote-backref" href="#fnref:conflict_poor" title="Jump back to footnote 14 in the text">&#8617;</a></p>
+</li>
+<li id="fn:energy_poverty">
+<p>Brian Min, Zachary P. O’Keeffe, Babatunde Abidoye, Kwawu Mensan Gaba, Trevor Monroe, Benjamin P. Stewart, Kimberly Baugh, and Bruno Sánchez-Andrade Nuño. Lost in the dark: a survey of energy poverty from space. <em>Joule</em>, 8(7):1982&ndash;1998, 2024. URL: <a href="https://www.sciencedirect.com/science/article/pii/S2542435124002010">https://www.sciencedirect.com/science/article/pii/S2542435124002010</a>, <a href="https://doi.org/https://doi.org/10.1016/j.joule.2024.05.001">doi:https://doi.org/10.1016/j.joule.2024.05.001</a>.&#160;<a class="footnote-backref" href="#fnref:energy_poverty" title="Jump back to footnote 15 in the text">&#8617;</a></p>
+</li>
+<li id="fn:bara2025">
+<p>Corinne Bara and Valerie Sticher. The rural limits of conflict monitoring using nighttime lights. <em>Humanities and Social Sciences Communications</em>, 12(1):905, 2025. URL: <a href="https://doi.org/10.1057/s41599-025-05074-6">https://doi.org/10.1057/s41599-025-05074-6</a>, <a href="https://doi.org/10.1057/s41599-025-05074-6">doi:10.1057/s41599-025-05074-6</a>.&#160;<a class="footnote-backref" href="#fnref:bara2025" title="Jump back to footnote 16 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": ["toc.integrate", "navigation.sections", "content.tooltips", "content.footnote.tooltips"], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="assets/javascripts/panzoom.min.js"></script>
+      
+        <script src="assets/javascripts/zoompan.js"></script>
+      
+    
+  </body>
+</html>
